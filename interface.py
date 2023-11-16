@@ -3,21 +3,17 @@ from tkinter import ttk, messagebox
 import pyperclip
 from newpassword import NewPasswordWindow
 
-
-
 class PasswordManager:
     def __init__(self, master):
-       
         self.master = master
         self.master.title("Gestionnaire de Mot de Passe")
         self.master.configure(bg="#b0c4de")
+
         # Titre pour la création du nouveau mot de passe
         new_password_label = tk.Label(self.master, text="Bienvenue sur votre Gestionnaire de mots de passe", font=("Helvetica", 16, "bold"), anchor="e", background="#b0c4de")
         new_password_label.pack(pady=10)
 
-        
-        
-          # Création du tableau
+        # Création du tableau
         self.tree = ttk.Treeview(self.master, columns=("Titre", "Pseudo", "Mot de Passe"), show="headings")
 
         # Configurer les en-têtes de colonnes
@@ -34,7 +30,7 @@ class PasswordManager:
         example_data = [
             ("Compte Microsoft", "user123", "*****"),
             ("Compte Protime", "admin_pro", "******"),
-            ("Compte Gmail", "john.doe@gmail.com", "********"),
+            ("Compte Gmail", "john.doe@gmail.com", "montant"),
             ("Compte Facebook", "fb_user", "*********"),
             ("Compte Twitter", "twitter_user", "*********")
         ]
@@ -42,54 +38,49 @@ class PasswordManager:
         for data in example_data:
             self.tree.insert("", "end", values=data)
 
-        
-
         # Ajouter le tableau à la fenêtre
-        self.tree.pack(side=tk.TOP, anchor=tk.W, pady=50, padx = 10)
+        self.tree.pack(side=tk.TOP, anchor=tk.W, pady=50, padx=10)
 
-
-   # Bouton pour ouvrir la fenêtre de création de mot de passe
+        # Bouton pour ouvrir la fenêtre de création de mot de passe
         open_new_password_button = tk.Button(self.master, text="Ajouter un nouveau mot de passe", command=self.open_new_password_window)
-        open_new_password_button.pack(side=tk.LEFT,anchor=tk.NW, padx=5)
+        open_new_password_button.pack(side=tk.LEFT, anchor=tk.NW, padx=5)
 
-# Bouton pour copier
+        # Bouton pour copier
         copy_button = tk.Button(self.master, text="Copier", command=self.copy_selected)
         copy_button.pack(side=tk.LEFT, padx=5, anchor=tk.NW)
 
         # Bouton pour supprimer
         delete_button = tk.Button(self.master, text="Supprimer", command=self.delete_selected)
         delete_button.pack(side=tk.LEFT, padx=5, anchor=tk.NW)
-       
-       
 
     def open_new_password_window(self):
         new_password_window = tk.Toplevel(self.master)
-        new_password_app = NewPasswordWindow(new_password_window)
+        new_password_window.geometry("600x600")  # taille de la fenêtre
+        new_password_app = NewPasswordWindow(new_password_window, self)
 
+    # faire un copier du mot de passe
     def copy_selected(self):
         selected_item = self.tree.selection()
         if selected_item:
             item_values = self.tree.item(selected_item, "values")
             password = item_values[2]  # Récupérer le mot de passe
+            print(password)
             pyperclip.copy(password)  # Copier dans le presse-papiers
             messagebox.showinfo("Copier", f"Le mot de passe a été copié dans le presse-papiers:\n{password}")
         else:
             messagebox.showwarning("Sélection nécessaire", "Veuillez sélectionner une ligne pour copier.")
 
+    # Cette fonction supprime le mot de passe de la ligne sélectionnée
     def delete_selected(self):
         selected_item = self.tree.selection()
         if selected_item:
-            # Ici, tu peux ajouter la logique pour supprimer la ligne sélectionnée
+            # Ici, tu peux ajouter la suppression dans la BDD
             self.tree.delete(selected_item)
             messagebox.showinfo("Supprimer", "La ligne a été supprimée avec succès.")
         else:
             messagebox.showwarning("Sélection nécessaire", "Veuillez sélectionner une ligne pour supprimer.")
 
-        
-
-       
-
 root = tk.Tk()
-root.geometry("1200x800") # taille de la fenêtre
+root.geometry("1200x800")  # taille de la fenêtre
 app = PasswordManager(root)
 root.mainloop()
