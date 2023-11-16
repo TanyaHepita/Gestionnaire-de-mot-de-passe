@@ -55,7 +55,7 @@ class PasswordManager:
 
     def open_new_password_window(self):
         new_password_window = tk.Toplevel(self.master)
-        new_password_window.geometry("600x600")  # taille de la fenêtre
+        new_password_window.geometry("600x500")  # taille de la fenêtre
         new_password_app = NewPasswordWindow(new_password_window, self)
 
     # faire un copier du mot de passe
@@ -64,8 +64,9 @@ class PasswordManager:
         if selected_item:
             item_values = self.tree.item(selected_item, "values")
             password = item_values[2]  # Récupérer le mot de passe
-            print(password)
-            pyperclip.copy(password)  # Copier dans le presse-papiers
+            self.master.clipboard_clear()
+            self.master.clipboard_append(password)
+            self.master.update()
             messagebox.showinfo("Copier", f"Le mot de passe a été copié dans le presse-papiers:\n{password}")
         else:
             messagebox.showwarning("Sélection nécessaire", "Veuillez sélectionner une ligne pour copier.")
