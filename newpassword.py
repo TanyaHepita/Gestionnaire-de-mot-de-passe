@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import messagebox, ttk
 import re
+from generemdp import GenereMdp
+from PySide2 import  QtWidgets
 
 class NewPasswordWindow:
     def __init__(self, master, app_instance):
@@ -9,25 +11,25 @@ class NewPasswordWindow:
         self.app_instance = app_instance
 
         # Entrée pour le nom du mot de passe
-        password_name_label = tk.Label(self.master, text="Titre :")
+        password_name_label = tk.Label(self.master, text="Titre :", font=('Helvetica', 10, 'bold'))
         password_name_label.pack(side=tk.TOP, padx=5, pady=5, anchor=tk.NW)
         self.password_name_entry = tk.Entry(self.master)
         self.password_name_entry.pack(side=tk.TOP, padx=5, pady=5, anchor=tk.NW)
 
         # Entrée pour le nom du mot de passe
-        password_pseudo_label = tk.Label(self.master, text="Votre pseudo:")
+        password_pseudo_label = tk.Label(self.master, text="Votre pseudo:", font=('Helvetica', 10, 'bold'))
         password_pseudo_label.pack(side=tk.TOP, padx=5, pady=5, anchor=tk.NW)
         self.password_pseudo_entry = tk.Entry(self.master)
         self.password_pseudo_entry.pack(side=tk.TOP, padx=5, pady=5, anchor=tk.NW)
 
         # Entrée pour le nouveau mot de passe
-        password_label = tk.Label(self.master, text="Nouveau mot de passe:")
+        password_label = tk.Label(self.master, text="Nouveau mot de passe:", font=('Helvetica', 10, 'bold'))
         password_label.pack(side=tk.TOP, padx=5, pady=5, anchor=tk.NW)
         self.password_entry = tk.Entry(self.master, show="*")
         self.password_entry.pack(side=tk.TOP, padx=5, pady=5, anchor=tk.NW)
 
         # Confirmation pour le nouveau mot de passe
-        password_label_conf = tk.Label(self.master, text="Confirmer votre mot de passe:")
+        password_label_conf = tk.Label(self.master, text="Confirmer votre mot de passe:", font=('Helvetica', 10, 'bold'))
         password_label_conf.pack(side=tk.TOP, padx=5, pady=5, anchor=tk.NW)
         self.password_entry_conf = tk.Entry(self.master, show="*")
         self.password_entry_conf.pack(side=tk.LEFT, padx=5, pady=5, anchor=tk.NW)
@@ -39,13 +41,19 @@ class NewPasswordWindow:
         show_password_checkbox.pack(pady=5, anchor=tk.NW)
 
         # Bouton pour générer un mot de passe fort
-        generate_password_button = tk.Button(self.master, text="Générer un mot de passe fort", command=self.generate_strong_password)
+        generate_password_button = tk.Button(self.master, text="Générer un mot de passe fort", command=self.open_generate_password_window)
         generate_password_button.pack(pady=20, anchor=tk.NW)
 
         # Bouton pour valider et sauvegarder le mot de passe
         validate_button = tk.Button(self.master, text="Valider", command=self.save_password)
         validate_button.pack(pady=10, padx=70, anchor=tk.NW)
 
+    def open_generate_password_window(self):
+        generate_password_window = tk.Toplevel(self.master)
+        generate_password_window.geometry("550x200")  # taille de la fenêtre
+        generate_password_app = GenereMdp(generate_password_window, self)
+      
+          
     def toggle_password_visibility(self):
         if self.show_password_var.get():
             self.password_entry.config(show="")
@@ -53,10 +61,7 @@ class NewPasswordWindow:
         else:
             self.password_entry.config(show="*")
             self.password_entry_conf.config(show="*")
-
-    def generate_strong_password(self):
-        # Ajoute ici la logique pour générer un mot de passe fort
-        messagebox.showinfo("Mot de Passe Fort", "Mot de passe fort généré!", parent=self.master)
+    
 
     def save_password(self):
         # Récupérer les valeurs des entrées
@@ -90,3 +95,4 @@ class NewPasswordWindow:
         # Utiliser une expression régulière pour vérifier la force du mot de passe
         regex = re.compile(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()-_+=]).{8,}$')
         return bool(regex.match(password))
+
