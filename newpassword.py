@@ -1,8 +1,8 @@
 import tkinter as tk
-from tkinter import messagebox, ttk
+from tkinter import messagebox
 import re
 from generemdp import GenereMdp
-from PySide2 import  QtWidgets
+
 
 class NewPasswordWindow:
     def __init__(self, master, app_instance):
@@ -33,6 +33,7 @@ class NewPasswordWindow:
         password_label_conf.pack(side=tk.TOP, padx=5, pady=5, anchor=tk.NW)
         self.password_entry_conf = tk.Entry(self.master, show="*")
         self.password_entry_conf.pack(side=tk.LEFT, padx=5, pady=5, anchor=tk.NW)
+
 
         # Option pour afficher/masquer le mot de passe
         self.show_password_var = tk.BooleanVar()

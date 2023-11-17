@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import messagebox
 from random import choice
 
 class GenereMdp:
@@ -57,6 +57,7 @@ class GenereMdp:
             messagebox.showinfo("Copier", f"Le mot de passe a été copié dans le presse-papiers:\n{mot_de_passe}", parent=self.master)
         else:
             messagebox.showwarning("Mot de passe vide", "Le champ de mot de passe est vide.", parent=self.master)
+        return mot_de_passe
 
     #ICI POUR CHANGER ALGO GENERATION MDP
     def genererMotDePasse(self, tailleMotDePasse=8, minuscules=True, majuscules=True, chiffres=True, symboles=True):
