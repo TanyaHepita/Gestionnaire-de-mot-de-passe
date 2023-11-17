@@ -18,6 +18,11 @@ class GenereMdp:
         self.caseSymboles_var = tk.BooleanVar()
         self.caseSymboles = tk.Checkbutton(self.master, text="Symboles", variable=self.caseSymboles_var)
 
+        self.caseMinuscules.select()  # Pour cocher par défaut
+        self.caseMajuscules.select()  
+        self.caseChiffres.select()  #
+        self.caseSymboles.select()  # 
+
         # Les boutons
         self.boutonQuitter = tk.Button(self.master, text="Quitter", command=self.quitter)
         self.boutonCopier = tk.Button(self.master, text="Copier", command=self.copier)
@@ -58,7 +63,7 @@ class GenereMdp:
             self.new_instance.password_entry.insert(0, mot_de_passe)
             self.new_instance.password_entry_conf.delete(0, tk.END)
             self.new_instance.password_entry_conf.insert(0, mot_de_passe)
-            messagebox.showinfo("Copier", f"Le mot de passe a été copié dans le presse-papiers:\n{mot_de_passe}", parent=self.master)
+            messagebox.showinfo("Copier", "Le mot de passe a été copié dans le presse-papiers:\n{mot_de_passe}", parent=self.master)
         else:
             messagebox.showwarning("Mot de passe vide", "Le champ de mot de passe est vide.", parent=self.master)
         return mot_de_passe
@@ -92,6 +97,9 @@ class GenereMdp:
             chiffres = True
         if self.caseSymboles_var.get():
             symboles = True
+        if not majuscules and not minuscules and  not chiffres and not symboles:
+            messagebox.showwarning("Impossible de générer", "Veuillez cocher les cases.", parent=self.master)
+            return
 
         mot_de_passe = self.genererMotDePasse(taille_mot_de_passe, minuscules, majuscules, chiffres, symboles)
         self.champTexte.delete(0, tk.END)
@@ -100,4 +108,3 @@ class GenereMdp:
     def changerTailleMotDePasse(self, event):
         taille = self.glissiereTaille.get()
         self.glissiereTaille.configure(label=f"Taille : {taille}")
-
