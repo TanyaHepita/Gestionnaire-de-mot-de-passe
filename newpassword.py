@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import messagebox
 import re
 from generemdp import GenereMdp
+from urllib.parse import urlparse
 
 
 class NewPasswordWindow:
@@ -10,22 +11,48 @@ class NewPasswordWindow:
         self.master.title("Nouveau Mot de Passe")
         self.app_instance = app_instance
 
+        selected_item = self.app_instance.tree.selection()
+        item_values = self.app_instance.tree.item(selected_item, "values")
+        
+
         # Entrée pour le nom du mot de passe
         password_name_label = tk.Label(self.master, text="Titre :", font=('Helvetica', 10, 'bold'))
         password_name_label.pack(side=tk.TOP, padx=5, pady=5, anchor=tk.NW)
         self.password_name_entry = tk.Entry(self.master)
+        if selected_item:
+            self.password_name_entry.delete(0, tk.END)
+            self.password_name_entry.insert(0, item_values[0])
+            
         self.password_name_entry.pack(side=tk.TOP, padx=5, pady=5, anchor=tk.NW)
+
+        # Entrée pour le nom du mot de passe
+        password_URL_label = tk.Label(self.master, text="URL:", font=('Helvetica', 10, 'bold'))
+        password_URL_label.pack(side=tk.TOP, padx=5, pady=5, anchor=tk.NW)
+        self.password_URL_entry = tk.Entry(self.master)
+        if selected_item:
+            self.password_URL_entry.delete(0, tk.END)
+            self.password_URL_entry.insert(0, item_values[3])  
+       
+        self.password_URL_entry.pack(side=tk.TOP, padx=5, pady=5, anchor=tk.NW)
 
         # Entrée pour le nom du mot de passe
         password_pseudo_label = tk.Label(self.master, text="Votre pseudo:", font=('Helvetica', 10, 'bold'))
         password_pseudo_label.pack(side=tk.TOP, padx=5, pady=5, anchor=tk.NW)
         self.password_pseudo_entry = tk.Entry(self.master)
+        if selected_item:
+            self.password_pseudo_entry.delete(0, tk.END)
+            self.password_pseudo_entry.insert(0, item_values[1])  
+       
         self.password_pseudo_entry.pack(side=tk.TOP, padx=5, pady=5, anchor=tk.NW)
 
         # Entrée pour le nouveau mot de passe
         password_label = tk.Label(self.master, text="Nouveau mot de passe:", font=('Helvetica', 10, 'bold'))
         password_label.pack(side=tk.TOP, padx=5, pady=5, anchor=tk.NW)
         self.password_entry = tk.Entry(self.master, show="*")
+        if selected_item:
+            self.password_entry.delete(0, tk.END)
+            self.password_entry.insert(0, item_values[2])
+
         self.password_entry.pack(side=tk.TOP, padx=5, pady=5, anchor=tk.NW)
 
         # Confirmation pour le nouveau mot de passe
@@ -34,6 +61,7 @@ class NewPasswordWindow:
         self.password_entry_conf = tk.Entry(self.master, show="*")
         self.password_entry_conf.pack(side=tk.LEFT, padx=5, pady=5, anchor=tk.NW)
 
+        
 
         # Option pour afficher/masquer le mot de passe
         self.show_password_var = tk.BooleanVar()
@@ -70,9 +98,10 @@ class NewPasswordWindow:
         pseudo = self.password_pseudo_entry.get()
         password = self.password_entry.get()
         password_conf = self.password_entry_conf.get()
+        url = self.password_URL_entry.get()
 
         # Vérifier si les champs sont vides
-        if not title or not pseudo or not password:
+        if not title or not pseudo or not password or not url:
             messagebox.showwarning("Champs vides", "Veuillez remplir tous les champs.", parent=self.master)
             return
         if password_conf != password:
@@ -80,6 +109,9 @@ class NewPasswordWindow:
             return
         if not self.is_strong_password(password):
             messagebox.showwarning("Mot de passe faible", "Le mot de passe doit avoir au moins 8 caractères, des majuscules, des minuscules et des caractères spéciaux.", parent=self.master)
+            return
+        if not self.is_valid_url(url): 
+            messagebox.showwarning("URL non valide", "Veuillez écrire une URL valide", parent=self.master)
             return
 
         # Ajouter les nouvelles données à l'exemple_data (ou à ta base de données)
@@ -97,3 +129,9 @@ class NewPasswordWindow:
         regex = re.compile(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()-_+=]).{8,}$')
         return bool(regex.match(password))
 
+    def is_valid_url(url):
+        try:
+            result = urlparse(url)
+            return all([result.scheme, result.netloc])
+        except ValueError:
+            return False

@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from newpassword import NewPasswordWindow
 
+
 class PasswordManager:
     def __init__(self, master):
         self.master = master
@@ -13,25 +14,27 @@ class PasswordManager:
         new_password_label.pack(pady=10)
 
         # Création du tableau
-        self.tree = ttk.Treeview(self.master, columns=("Titre", "Pseudo", "Mot de Passe"), show="headings")
+        self.tree = ttk.Treeview(self.master, columns=("Titre", "Pseudo", "Mot de Passe", "URL"), show="headings")
 
         # Configurer les en-têtes de colonnes
         self.tree.heading("Titre", text="Titre")
         self.tree.heading("Pseudo", text="Pseudo")
         self.tree.heading("Mot de Passe", text="Mot de Passe")
+        self.tree.heading("URL", text="URL")
 
         # Configurer la largeur des colonnes
         self.tree.column("Titre", width=150)
         self.tree.column("Pseudo", width=150)
         self.tree.column("Mot de Passe", width=150)
+        self.tree.column("URL", width=200)
 
         # Ajouter des lignes d'exemple
         example_data = [
-            ("Compte Microsoft", "user123", "*****"),
-            ("Compte Protime", "admin_pro", "******"),
-            ("Compte Gmail", "john.doe@gmail.com", "montant"),
-            ("Compte Facebook", "fb_user", "*********"),
-            ("Compte Twitter", "twitter_user", "*********")
+            ("Compte Microsoft", "user123", "*****", "https://www.example1.com"),
+            ("Compte Protime", "admin_pro", "******","https://www.example1.com"),
+            ("Compte Gmail", "john.doe@gmail.com", "montant", "https://www.example1.com"),
+            ("Compte Facebook", "fb_user", "*********", "https://www.example1.com"),
+            ("Compte Twitter", "twitter_user", "*********", "https://www.example1.com")
         ]
 
         for data in example_data:
@@ -61,9 +64,7 @@ class PasswordManager:
         new_password_window.geometry("600x500")  # taille de la fenêtre
         new_password_app = NewPasswordWindow(new_password_window, self)
 
-    """
-    @param: 
-    """
+   
     def open_modif_password_window(self):
         modif_password_window = tk.Toplevel(self.master)
         modif_password_window.geometry("600x500")  # taille de la fenêtre
