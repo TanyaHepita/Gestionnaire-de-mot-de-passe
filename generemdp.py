@@ -3,10 +3,10 @@ from tkinter import messagebox
 from random import choice
 
 class GenereMdp:
-    def __init__(self, master, app_instance):
+    def __init__(self, master, new_instance):
         self.master = master
         self.master.title("Générateur de mot de passe")
-        self.app_instance = app_instance
+        self.new_instance = new_instance
 
         # Les cases à cocher
         self.caseMinuscules_var = tk.BooleanVar()
@@ -54,6 +54,10 @@ class GenereMdp:
             self.master.clipboard_clear()
             self.master.clipboard_append(mot_de_passe)
             self.master.update()
+            self.new_instance.password_entry.delete(0, tk.END)
+            self.new_instance.password_entry.insert(0, mot_de_passe)
+            self.new_instance.password_entry_conf.delete(0, tk.END)
+            self.new_instance.password_entry_conf.insert(0, mot_de_passe)
             messagebox.showinfo("Copier", f"Le mot de passe a été copié dans le presse-papiers:\n{mot_de_passe}", parent=self.master)
         else:
             messagebox.showwarning("Mot de passe vide", "Le champ de mot de passe est vide.", parent=self.master)
@@ -96,5 +100,4 @@ class GenereMdp:
     def changerTailleMotDePasse(self, event):
         taille = self.glissiereTaille.get()
         self.glissiereTaille.configure(label=f"Taille : {taille}")
-
 
