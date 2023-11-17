@@ -4,6 +4,12 @@ from newpassword import NewPasswordWindow
 
 
 class PasswordManager:
+    """
+        Initialise l'interface du gestionnaire
+
+        Créer les boutons et affiche les mots de passe de la base de donnée
+    
+    """
     def __init__(self, master):
         self.master = master
         self.master.title("Gestionnaire de Mot de Passe")
@@ -66,7 +72,13 @@ class PasswordManager:
 
    
     
-    # faire un copier du mot de passe
+   
+    """
+        Copie le mot de passe
+
+        Recupère le mot de passe selectionné et le copie dans le presse papier
+
+    """
     def copy_selected(self):
         selected_item = self.tree.selection()
         if selected_item:
@@ -79,7 +91,11 @@ class PasswordManager:
         else:
             messagebox.showwarning("Sélection nécessaire", "Veuillez sélectionner une ligne pour copier.")
 
-    # Cette fonction supprime le mot de passe de la ligne sélectionnée
+    """
+        Supprime mot de passe 
+
+        Une fois la ligne selectionnée le mot passe entier est supprimé de la base de donnée
+    """
     def delete_selected(self):
         selected_item = self.tree.selection()
         if selected_item:
