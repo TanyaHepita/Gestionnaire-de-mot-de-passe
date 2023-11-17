@@ -48,7 +48,7 @@ class PasswordManager:
         open_new_password_button.pack(side=tk.LEFT, anchor=tk.NW, padx=5)
 
         # Bouton pour ouvrir la fenêtre de création de mot de passe
-        open_modif_password_button = tk.Button(self.master, text="Modifier", command=self.open_modif_password_window)
+        open_modif_password_button = tk.Button(self.master, text="Modifier", command=self.open_new_password_window)
         open_modif_password_button.pack(side=tk.LEFT, anchor=tk.NW, padx=5)
 
         # Bouton pour copier
@@ -65,11 +65,7 @@ class PasswordManager:
         new_password_app = NewPasswordWindow(new_password_window, self)
 
    
-    def open_modif_password_window(self):
-        modif_password_window = tk.Toplevel(self.master)
-        modif_password_window.geometry("600x500")  # taille de la fenêtre
-        new_password_app = NewPasswordWindow(modif_password_window, self)
-
+    
     # faire un copier du mot de passe
     def copy_selected(self):
         selected_item = self.tree.selection()
