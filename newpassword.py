@@ -6,20 +6,22 @@ from urllib.parse import urlparse
 
 
 class NewPasswordWindow:
-    def __init__(self, master, app_instance):
+    def __init__(self, master, app_instance, mode):
         self.master = master
+        self.mode = mode
         self.master.title("Nouveau Mot de Passe")
         self.app_instance = app_instance
 
         selected_item = self.app_instance.tree.selection()
         item_values = self.app_instance.tree.item(selected_item, "values")
+
         
 
         # Entrée pour le nom du mot de passe
         password_name_label = tk.Label(self.master, text="Titre :", font=('Helvetica', 10, 'bold'))
         password_name_label.pack(side=tk.TOP, padx=5, pady=5, anchor=tk.NW)
         self.password_name_entry = tk.Entry(self.master)
-        if selected_item:
+        if selected_item and mode == "modifier":
             self.password_name_entry.delete(0, tk.END)
             self.password_name_entry.insert(0, item_values[0])
             
@@ -29,7 +31,7 @@ class NewPasswordWindow:
         password_URL_label = tk.Label(self.master, text="URL:", font=('Helvetica', 10, 'bold'))
         password_URL_label.pack(side=tk.TOP, padx=5, pady=5, anchor=tk.NW)
         self.password_URL_entry = tk.Entry(self.master)
-        if selected_item:
+        if selected_item and mode == "modifier":
             self.password_URL_entry.delete(0, tk.END)
             self.password_URL_entry.insert(0, item_values[3])  
        
@@ -39,7 +41,7 @@ class NewPasswordWindow:
         password_pseudo_label = tk.Label(self.master, text="Votre pseudo:", font=('Helvetica', 10, 'bold'))
         password_pseudo_label.pack(side=tk.TOP, padx=5, pady=5, anchor=tk.NW)
         self.password_pseudo_entry = tk.Entry(self.master)
-        if selected_item:
+        if selected_item and mode == "modifier":
             self.password_pseudo_entry.delete(0, tk.END)
             self.password_pseudo_entry.insert(0, item_values[1])  
        
@@ -49,7 +51,7 @@ class NewPasswordWindow:
         password_label = tk.Label(self.master, text="Nouveau mot de passe:", font=('Helvetica', 10, 'bold'))
         password_label.pack(side=tk.TOP, padx=5, pady=5, anchor=tk.NW)
         self.password_entry = tk.Entry(self.master, show="*")
-        if selected_item:
+        if selected_item and mode == "modifier":
             self.password_entry.delete(0, tk.END)
             self.password_entry.insert(0, item_values[2])
 
@@ -113,13 +115,19 @@ class NewPasswordWindow:
         if not self.is_valid_url(url): 
             messagebox.showwarning("URL non valide", "Veuillez écrire une URL valide", parent=self.master)
             return
+        if self.mode == "new" :
+            # Ajouter les nouvelles données à l'exemple_data (ou à ta base de données)
+            new_data = (title, pseudo, password, url)
+            self.app_instance.tree.insert("", "end", values=new_data)  # app est une instance de PasswordManager
 
-        # Ajouter les nouvelles données à l'exemple_data (ou à ta base de données)
-        new_data = (title, pseudo, password)
-        self.app_instance.tree.insert("", "end", values=new_data)  # app est une instance de PasswordManager
+            # Afficher un message de succès
+            messagebox.showinfo("Succès", "Mot de passe ajouté avec succès à la base de données.", parent=self.master)
+        else :
+            selected_item = self.app_instance.tree.selection()
+            self.app_instance.tree.item(selected_item, values=(title, pseudo, password, url))
 
-        # Afficher un message de succès
-        messagebox.showinfo("Succès", "Mot de passe ajouté avec succès à la base de données.", parent=self.master)
+            # Afficher un message de succès
+            messagebox.showinfo("Succès", "Mot de passe modifié avec succès à la base de données.", parent=self.master)
 
         # Fermer la fenêtre
         self.master.destroy()
@@ -129,7 +137,7 @@ class NewPasswordWindow:
         regex = re.compile(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()-_+=]).{8,}$')
         return bool(regex.match(password))
 
-    def is_valid_url(url):
+    def is_valid_url(self, url):
         try:
             result = urlparse(url)
             return all([result.scheme, result.netloc])

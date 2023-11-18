@@ -20,8 +20,8 @@ class GenereMdp:
 
         self.caseMinuscules.select()  # Pour cocher par défaut
         self.caseMajuscules.select()  
-        self.caseChiffres.select()  #
-        self.caseSymboles.select()  # 
+        self.caseChiffres.select()  
+        self.caseSymboles.select()  
 
         # Les boutons
         self.boutonQuitter = tk.Button(self.master, text="Quitter", command=self.quitter)
@@ -63,7 +63,6 @@ class GenereMdp:
             self.new_instance.password_entry.insert(0, mot_de_passe)
             self.new_instance.password_entry_conf.delete(0, tk.END)
             self.new_instance.password_entry_conf.insert(0, mot_de_passe)
-            messagebox.showinfo("Copier", "Le mot de passe a été copié dans le presse-papiers:\n{mot_de_passe}", parent=self.master)
         else:
             messagebox.showwarning("Mot de passe vide", "Le champ de mot de passe est vide.", parent=self.master)
         return mot_de_passe
