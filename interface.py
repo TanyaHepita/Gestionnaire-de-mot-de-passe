@@ -2,7 +2,6 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from newpassword import NewPasswordWindow
 
-
 class PasswordManager:
     """
         Initialise l'interface du gestionnaire
@@ -54,7 +53,7 @@ class PasswordManager:
         open_new_password_button.pack(side=tk.LEFT, anchor=tk.NW, padx=5)
 
         # Bouton pour ouvrir la fenêtre de création de mot de passe
-        open_modif_password_button = tk.Button(self.master, text="Modifier", command=self.open_new_password_window)
+        open_modif_password_button = tk.Button(self.master, text="Modifier", command=self.edit_new_password_window)
         open_modif_password_button.pack(side=tk.LEFT, anchor=tk.NW, padx=5)
 
         # Bouton pour copier
@@ -68,9 +67,18 @@ class PasswordManager:
     def open_new_password_window(self):
         new_password_window = tk.Toplevel(self.master)
         new_password_window.geometry("600x500")  # taille de la fenêtre
-        new_password_app = NewPasswordWindow(new_password_window, self)
+        new_password_app = NewPasswordWindow(new_password_window, self, "new")
 
-   
+    def edit_new_password_window(self):
+        selected_item = self.tree.selection()
+
+        if selected_item:
+            edit_password_window = tk.Toplevel(self.master)
+            edit_password_window.geometry("600x500")  # taille de la fenêtre
+            edit_password_app = NewPasswordWindow(edit_password_window, self, "modifier")
+        else:
+            messagebox.showwarning("Sélection requise", "Veuillez sélectionner un élément à modifier.")
+
     
    
     """
@@ -87,7 +95,6 @@ class PasswordManager:
             self.master.clipboard_clear()
             self.master.clipboard_append(password)
             self.master.update()
-            messagebox.showinfo("Copier", f"Le mot de passe a été copié dans le presse-papiers:\n{password}")
         else:
             messagebox.showwarning("Sélection nécessaire", "Veuillez sélectionner une ligne pour copier.")
 
@@ -101,7 +108,6 @@ class PasswordManager:
         if selected_item:
             # Ici, tu peux ajouter la suppression dans la BDD
             self.tree.delete(selected_item)
-            messagebox.showinfo("Supprimer", "La ligne a été supprimée avec succès.")
         else:
             messagebox.showwarning("Sélection nécessaire", "Veuillez sélectionner une ligne pour supprimer.")
 
