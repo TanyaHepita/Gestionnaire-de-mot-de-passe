@@ -76,7 +76,7 @@ class PasswordManager:
             rows = cursor.fetchall()
 
             for row in rows:
-                self.tree.insert("", "end", values=(row[2], row[3], row[4]))
+                self.tree.insert("", "end", values=(row[1], row[2], row[3]))
                 
     def open_new_password_window(self):
         new_password_window = tk.Toplevel(self.master)

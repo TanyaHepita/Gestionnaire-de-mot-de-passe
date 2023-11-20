@@ -67,7 +67,7 @@ class NewPasswordWindow:
             self.password_entry.config(show="*")
             self.password_entry_conf.config(show="*")
     
-    def ajouter_mot_de_passe(site, utilisateur, mot_de_passe, note=None):
+    def ajouter_mot_de_passe(self, site, utilisateur, mot_de_passe, note=None):
         cursor.execute('''
                 INSERT INTO mots_de_passe (site, utilisateur, mot_de_passe)
                 VALUES (?, ?, ?) ''', (str(site), str(utilisateur), str(mot_de_passe)))
