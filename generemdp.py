@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import messagebox
 from random import choice
+from random import sample
+import string 
 
 class GenereMdp:
     def __init__(self, master, new_instance):
@@ -71,6 +73,35 @@ class GenereMdp:
     def genererMotDePasse(self, tailleMotDePasse=8, minuscules=True, majuscules=True, chiffres=True, symboles=True):
         caracteres = ""
         if minuscules:
+            caracteres += string.ascii_lowercase
+        if majuscules:
+            caracteres += string.ascii_uppercase
+        if chiffres:
+            caracteres += string.digits
+        if symboles:
+            caracteres += "&~#{([-|_\^@)=+$]}*%!/:.;?,"
+        # S'assurer qu'au moins un caractère de chaque type est inclus
+        if minuscules:
+            caracteres += choice(string.ascii_lowercase)
+        if majuscules:
+            caracteres += choice(string.ascii_uppercase)
+        if chiffres:
+            caracteres += choice(string.digits)
+        if symboles:
+            caracteres += choice("&~#{([-|_\^@)=+$]}*%!/:.;?,")
+        # Générer le reste du mot de passe
+        motDePasse = "".join(choice(caracteres) for _ in range(tailleMotDePasse - len(caracteres)))
+        # Mélanger le mot de passe pour plus de sécurité
+        motDePasse = ''.join(sample(motDePasse, len(motDePasse)))
+        return motDePasse
+
+	
+
+	
+
+    """ def genererMotDePasse(self, tailleMotDePasse=8, minuscules=True, majuscules=True, chiffres=True, symboles=True):  
+        caracteres = ""
+        if minuscules:
             caracteres += "abcdefghijklmnopqrstuvwxyz"
         if majuscules:
             caracteres += "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -79,7 +110,7 @@ class GenereMdp:
         if symboles:
             caracteres += "&~#{([-|_\^@)=+$]}*%!/:.;?,"
         motDePasse = "".join(choice(caracteres) for _ in range(tailleMotDePasse))
-        return motDePasse
+        return motDePasse"""
 
     def generer(self):
         taille_mot_de_passe = self.glissiereTaille.get()
