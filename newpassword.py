@@ -3,7 +3,13 @@ from tkinter import messagebox
 import re
 from generemdp import GenereMdp
 from urllib.parse import urlparse
+import sqlite3
 
+conn = sqlite3.connect('gestionnaire_mdp.db') #Ouvre la connexion avec la base de données
+#A voir comment recuperer celle de interface
+
+# Création d'un curseur pour exécuter des requêtes SQL
+cursor = conn.cursor() 
 
 class NewPasswordWindow:
     def __init__(self, master, app_instance, mode):
@@ -92,7 +98,25 @@ class NewPasswordWindow:
         else:
             self.password_entry.config(show="*")
             self.password_entry_conf.config(show="*")
-    
+   
+   
+    def ajouter_mot_de_passe(self, site, utilisateur, mot_de_passe, url, note=None):
+        
+        cursor.execute('''
+                INSERT INTO mots_de_passe (site, utilisateur, mot_de_passe, url)
+                VALUES (?, ?, ?, ?) ''', (str(site), str(utilisateur), str(mot_de_passe), str(url)))
+        conn.commit()
+        #conn.close() -- Mis en commentaire car avec on ne peut pas mettre 2 mots de passe à la suite car la connexion se ferme sans se reouvrir
+
+    #Ne MARCHE PAS
+    def modifier_mot_de_passe(self, site, utilisateur, mot_de_passe, url):
+        
+        cursor.execute('''
+                UPDATE mots_de_passe SET utilisateur = ?, mot_de_passe = ?, url = ?
+                WHERE site = ? ''', (site, utilisateur, mot_de_passe, url))
+        conn.commit()
+        
+        
 
     def save_password(self):
         # Récupérer les valeurs des entrées
@@ -117,15 +141,17 @@ class NewPasswordWindow:
             return
         if self.mode == "new" :
             # Ajouter les nouvelles données à l'exemple_data (ou à ta base de données)
-            new_data = (title, pseudo, password, url)
-            self.app_instance.tree.insert("", "end", values=new_data)  # app est une instance de PasswordManager
-
+            self.ajouter_mot_de_passe(title, pseudo, password, url)
+            self.app_instance.update_treeview() 
             # Afficher un message de succès
             messagebox.showinfo("Succès", "Mot de passe ajouté avec succès à la base de données.", parent=self.master)
         else :
-            selected_item = self.app_instance.tree.selection()
-            self.app_instance.tree.item(selected_item, values=(title, pseudo, password, url))
-
+            #selected_item = self.app_instance.tree.selection()
+            #item_values = self.app_instance.tree.item(selected_item, "values")
+           # self.app_instance.tree.item(selected_item, values=(title, pseudo, password, url))
+           #Si ne marche pas voir pour ajouter difference ajouter et modifier
+            self.modifier_mot_de_passe(title,pseudo,password, url)
+            self.app_instance.update_treeview() 
             # Afficher un message de succès
             messagebox.showinfo("Succès", "Mot de passe modifié avec succès à la base de données.", parent=self.master)
 
