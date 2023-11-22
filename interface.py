@@ -95,14 +95,36 @@ class PasswordManager:
             messagebox.showinfo("Copier", f"Le mot de passe a été copié dans le presse-papiers:\n{password}")
         else:
             messagebox.showwarning("Sélection nécessaire", "Veuillez sélectionner une ligne pour copier.")
+    
+    def supprimer_mot_de_passe(self, mot_de_passe_id):
+        cursor.execute('DELETE FROM mots_de_passe WHERE id = ?', (mot_de_passe_id,))
+        conn.commit()
+
 
     # Cette fonction supprime le mot de passe de la ligne sélectionnée
     def delete_selected(self):
         selected_item = self.tree.selection()
         if selected_item:
-            # Ici, tu peux ajouter la suppression dans la BDD
-            self.tree.delete(selected_item)
-            messagebox.showinfo("Supprimer", "La ligne a été supprimée avec succès.")
+            item_values = self.tree.item(selected_item, "values")
+            mot_de_passe_id = None
+            if item_values:
+                cursor.execute('SELECT id FROM mots_de_passe WHERE site = ? AND utilisateur = ? AND mot_de_passe = ?',
+                            (item_values[0], item_values[1], item_values[2]))
+                result = cursor.fetchone()
+                if result:
+                    mot_de_passe_id = result[0]
+
+            # Vérifier si l'ID du mot de passe a été trouvé
+            if mot_de_passe_id:
+                # Supprimer le mot de passe de la base de données
+                self.supprimer_mot_de_passe(mot_de_passe_id)
+
+                # Supprimer l'élément sélectionné du treeview
+                self.tree.delete(selected_item)
+
+                messagebox.showinfo("Supprimer", "La ligne a été supprimée avec succès.")
+            else:
+                messagebox.showwarning("Erreur", "Impossible de trouver l'ID du mot de passe.")
         else:
             messagebox.showwarning("Sélection nécessaire", "Veuillez sélectionner une ligne pour supprimer.")
 
