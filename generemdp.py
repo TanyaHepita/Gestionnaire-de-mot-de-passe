@@ -69,8 +69,14 @@ class GenereMdp:
             messagebox.showwarning("Mot de passe vide", "Le champ de mot de passe est vide.", parent=self.master)
         return mot_de_passe
 
-    #ICI POUR CHANGER ALGO GENERATION MDP
-    def genererMotDePasse(self, tailleMotDePasse=8, minuscules=True, majuscules=True, chiffres=True, symboles=True):
+
+
+
+	
+    """
+        Génère un mot de passe fort
+    """
+    def genererMotDePasse(self, tailleMotDePasse=8, minuscules=True, majuscules=True, chiffres=True, symboles=True):  
         caracteres = ""
         if minuscules:
             caracteres += string.ascii_lowercase
@@ -80,7 +86,8 @@ class GenereMdp:
             caracteres += string.digits
         if symboles:
             caracteres += "&~#{([-|_\^@)=+$]}*%!/:.;?,"
-        # S'assurer qu'au moins un caractère de chaque type est inclus
+
+        # S'assurer qu'au moins un caractère de chaque type est inclus NE MARCHE PAS
         if minuscules:
             caracteres += choice(string.ascii_lowercase)
         if majuscules:
@@ -89,29 +96,16 @@ class GenereMdp:
             caracteres += choice(string.digits)
         if symboles:
             caracteres += choice("&~#{([-|_\^@)=+$]}*%!/:.;?,")
-        # Générer le reste du mot de passe
-        motDePasse = "".join(choice(caracteres) for _ in range(tailleMotDePasse - len(caracteres)))
+        
+        motDePasse = "".join(choice(caracteres) for _ in range(tailleMotDePasse))
         # Mélanger le mot de passe pour plus de sécurité
         motDePasse = ''.join(sample(motDePasse, len(motDePasse)))
         return motDePasse
 
-	
 
-	
-
-    """ def genererMotDePasse(self, tailleMotDePasse=8, minuscules=True, majuscules=True, chiffres=True, symboles=True):  
-        caracteres = ""
-        if minuscules:
-            caracteres += "abcdefghijklmnopqrstuvwxyz"
-        if majuscules:
-            caracteres += "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        if chiffres:
-            caracteres += "0123456789"
-        if symboles:
-            caracteres += "&~#{([-|_\^@)=+$]}*%!/:.;?,"
-        motDePasse = "".join(choice(caracteres) for _ in range(tailleMotDePasse))
-        return motDePasse"""
-
+    """
+        Prend en compte les choix de l'utilisateur et génère son mot de passe
+    """
     def generer(self):
         taille_mot_de_passe = self.glissiereTaille.get()
         minuscules = False
