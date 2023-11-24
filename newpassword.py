@@ -35,17 +35,17 @@ class NewPasswordWindow:
             
         self.password_name_entry.pack(side=tk.TOP, padx=5, pady=5, anchor=tk.NW)
 
-        # Entrée pour le nom du mot de passe
+        # Entrée pour l'url
         password_URL_label = tk.Label(self.master, text="URL:", font=('Helvetica', 10, 'bold'))
         password_URL_label.pack(side=tk.TOP, padx=5, pady=5, anchor=tk.NW)
         self.password_URL_entry = tk.Entry(self.master)
         if selected_item and mode == "modifier":
             self.password_URL_entry.delete(0, tk.END)
-            self.password_URL_entry.insert(0, item_values[3])  
+            self.password_URL_entry.insert(0, item_values[2])  
        
         self.password_URL_entry.pack(side=tk.TOP, padx=5, pady=5, anchor=tk.NW)
 
-        # Entrée pour le nom du mot de passe
+        # Entrée pour le pseudo du mot de passe
         password_pseudo_label = tk.Label(self.master, text="Votre pseudo:", font=('Helvetica', 10, 'bold'))
         password_pseudo_label.pack(side=tk.TOP, padx=5, pady=5, anchor=tk.NW)
         self.password_pseudo_entry = tk.Entry(self.master)
@@ -60,8 +60,15 @@ class NewPasswordWindow:
         password_label.pack(side=tk.TOP, padx=5, pady=5, anchor=tk.NW)
         self.password_entry = tk.Entry(self.master, show="*")
         if selected_item and mode == "modifier":
+            mot_de_passe_id = None
+            if item_values:
+                cursor.execute('SELECT mot_de_passe FROM mots_de_passe WHERE titre = ? AND utilisateur = ? AND url = ?',
+                            (item_values[0], item_values[1], item_values[2]))
+                result = cursor.fetchone()
+                if result:
+                    password = result[0]
             self.password_entry.delete(0, tk.END)
-            self.password_entry.insert(0, item_values[2])
+            self.password_entry.insert(0, password)
 
         self.password_entry.pack(side=tk.TOP, padx=5, pady=5, anchor=tk.NW)
 
@@ -117,14 +124,15 @@ class NewPasswordWindow:
             item_values = self.app_instance.tree.item(selected_item, "values")
             mot_de_passe_id = None
             if item_values:
-                cursor.execute('SELECT id FROM mots_de_passe WHERE titre = ? AND utilisateur = ? AND mot_de_passe = ? AND url = ?',
-                            (item_values[0], item_values[1], item_values[2], item_values[3]))
+                cursor.execute('SELECT id FROM mots_de_passe WHERE titre = ? AND utilisateur = ? AND url = ?',
+                            (item_values[0], item_values[1], item_values[2]))
                 result = cursor.fetchone()
                 if result:
-                    mot_de_passe_id = result[0]
+                    mot_de_passe_id = result[0] #prend l'id du mot de passe
             # Vérifier si l'ID du mot de passe a été trouvé
             if mot_de_passe_id:
-                # Supprimer le mot de passe de la base de données
+                # Supprimer le mot de passe de la base de données pour rajouter le nouveau apres 
+                #Car pas possivle modif in sqlite3 (A VERIFIER)
                 cursor.execute('DELETE FROM mots_de_passe WHERE id = ?', (mot_de_passe_id,))
                 conn.commit()
                 # Supprimer l'élément sélectionné du treeview 
@@ -149,12 +157,12 @@ class NewPasswordWindow:
         if password_conf != password:
             messagebox.showwarning("Mot de passe incompatible", "Veuillez mettre les mêmes mots de passe.", parent=self.master)
             return
-        """ pb avec base sinon
+        
         if not self.is_strong_password(password) and not conseil:
             messagebox.showwarning("Mot de passe faible", "Conseil pour mot de passe fort doit avoir au moins 8 caractères, des majuscules, des minuscules et des caractères spéciaux.", parent=self.master)
             conseil = True
             return
-        """
+        
         if not self.is_valid_url(url): 
             messagebox.showwarning("URL non valide", "Veuillez écrire une URL valide", parent=self.master)
             return
@@ -174,7 +182,7 @@ class NewPasswordWindow:
         self.master.destroy()
 
     """
-        Cette fonction verifie si le mot de passe passé est fort, cependant n'est utilisé
+        Vérifie si le mot de passe passé est fort, cependant n'est utilisé
         que pour conseil car pour des mdp de banque ex: il ne faut que des chiffres      
     """ 
     def is_strong_password(self, password):

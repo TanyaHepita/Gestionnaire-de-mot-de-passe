@@ -22,18 +22,18 @@ class PasswordManager:
         new_password_label.pack(pady=10)
 
         # Création du tableau
-        self.tree = ttk.Treeview(self.master, columns=("Titre", "Pseudo", "Mot de Passe", "URL"), show="headings")
+        self.tree = ttk.Treeview(self.master, columns=("Titre", "Pseudo", "URL"), show="headings")
 
         # Configurer les en-têtes de colonnes
         self.tree.heading("Titre", text="Titre")
         self.tree.heading("Pseudo", text="Pseudo")
-        self.tree.heading("Mot de Passe", text="Mot de Passe")
+        #self.tree.heading("Mot de Passe", text="Mot de Passe")
         self.tree.heading("URL", text="URL")
 
         # Configurer la largeur des colonnes
         self.tree.column("Titre", width=150)
         self.tree.column("Pseudo", width=150)
-        self.tree.column("Mot de Passe", width=150)
+        #self.tree.column("Mot de Passe", width=150)
         self.tree.column("URL", width=200)
 
         # Récupérer les données de la base de données et les afficher dans le treeview 
@@ -51,7 +51,7 @@ class PasswordManager:
         open_modif_password_button.pack(side=tk.LEFT, anchor=tk.NW, padx=5)
 
         # Bouton pour copier
-        copy_button = tk.Button(self.master, text="Copier", command=self.copy_selected)
+        copy_button = tk.Button(self.master, text="Copier mot de passe", command=self.copy_selected)
         copy_button.pack(side=tk.LEFT, padx=5, anchor=tk.NW)
 
         # Bouton pour supprimer
@@ -59,8 +59,7 @@ class PasswordManager:
         delete_button.pack(side=tk.LEFT, padx=5, anchor=tk.NW)
 
     '''
-        Fait la mise à jour de l'affichage des mot de passe 
-
+        Fait la mise à jour de l'affichage des mots de passe 
 
     '''
     def update_treeview(self):
@@ -71,8 +70,7 @@ class PasswordManager:
             cursor.execute('SELECT * FROM mots_de_passe')
             rows = cursor.fetchall()
             for row in rows:
-                #mot_de_passe_masque = '*' * len(row[3])
-                self.tree.insert("", "end", values=(row[1], row[2], row[3], row[4]))
+                self.tree.insert("", "end", values=(row[1], row[2], row[4]))
 
     '''
         Ouvre password_window en mode nouveau
@@ -113,35 +111,34 @@ class PasswordManager:
             item_values = self.tree.item(selected_item, "values")
             mot_de_passe_id = None
             if item_values:
-                cursor.execute('SELECT mot_de_passe FROM mots_de_passe WHERE titre = ? AND utilisateur = ? AND mot_de_passe = ? AND url = ?',
-                           (item_values[0], item_values[1], item_values[2], item_values[3]))
-                print(item_values[0])
+                cursor.execute('SELECT mot_de_passe FROM mots_de_passe WHERE titre = ? AND utilisateur = ? AND url = ?',
+                           (item_values[0], item_values[1], item_values[2]))
                 result = cursor.fetchone()
-                print(result)
                 if result :
                     password =  result  # Récupérer le mot de passe
                     self.master.clipboard_clear()
                     self.master.clipboard_append(password)
                     self.master.update()
-                    print("bien copier")
+                    
                     
         else:
             messagebox.showwarning("Sélection nécessaire", "Veuillez sélectionner une ligne pour copier.")
+
+
 
     """
         Supprime mot de passe 
 
         Une fois la ligne selectionnée le mot passe entier est supprimé de la base de donnée
     """
-
     def delete_selected(self):
         selected_item = self.tree.selection()
         if selected_item:
             item_values = self.tree.item(selected_item, "values")
             mot_de_passe_id = None
             if item_values:
-                cursor.execute('SELECT id FROM mots_de_passe WHERE titre = ? AND utilisateur = ? AND mot_de_passe = ? AND url = ?',
-                            (item_values[0], item_values[1], item_values[2], item_values[3]))
+                cursor.execute('SELECT id FROM mots_de_passe WHERE titre = ? AND utilisateur = ? AND url = ?',
+                            (item_values[0], item_values[1], item_values[2]))
                 result = cursor.fetchone()
                 if result:
                     mot_de_passe_id = result[0]
@@ -156,7 +153,9 @@ class PasswordManager:
         else:
             messagebox.showwarning("Sélection nécessaire", "Veuillez sélectionner une ligne pour supprimer.")
 
-    
+    """
+        Supprime mot de passe de la base
+    """
     def supprimer_mot_de_passe(self, mot_de_passe_id):
         cursor.execute('DELETE FROM mots_de_passe WHERE id = ?', (mot_de_passe_id,))
         conn.commit()
@@ -173,6 +172,11 @@ cursor = conn.cursor()
 #Création de la BDD pour TEST, à déplacer dans le module de création du mdp maître
 
         #---------------------------------
+"""
+    Créer la base de donnée
+
+    Si elle n'existe pas créer la table et 2 mots de passe exemple
+"""
 def create_bd():
     cursor.execute('''
                 CREATE TABLE IF NOT EXISTS mots_de_passe (
@@ -198,7 +202,7 @@ def create_bd():
     ''')
     result2 = cursor.fetchone()
     
-    if result is not None and result2 is not None:
+    if result is not None or result2 is not None:
         return
 
     else:
