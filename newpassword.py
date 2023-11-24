@@ -11,6 +11,7 @@ conn = sqlite3.connect('gestionnaire_mdp.db') #Ouvre la connexion avec la base d
 # Création d'un curseur pour exécuter des requêtes SQL
 cursor = conn.cursor() 
 
+conseil = False 
 class NewPasswordWindow:
     def __init__(self, master, app_instance, mode):
         self.master = master
@@ -20,7 +21,8 @@ class NewPasswordWindow:
 
         selected_item = self.app_instance.tree.selection()
         item_values = self.app_instance.tree.item(selected_item, "values")
-
+        
+        
         
 
         # Entrée pour le nom du mot de passe
@@ -100,23 +102,36 @@ class NewPasswordWindow:
             self.password_entry_conf.config(show="*")
    
    
-    def ajouter_mot_de_passe(self, site, utilisateur, mot_de_passe, url, note=None):
+    def ajouter_mot_de_passe(self, titre, utilisateur, mot_de_passe, url, note=None):
         
         cursor.execute('''
-                INSERT INTO mots_de_passe (site, utilisateur, mot_de_passe, url)
-                VALUES (?, ?, ?, ?) ''', (str(site), str(utilisateur), str(mot_de_passe), str(url)))
+                INSERT INTO mots_de_passe (titre, utilisateur, mot_de_passe, url)
+                VALUES (?, ?, ?, ?) ''', (str(titre), str(utilisateur), str(mot_de_passe), str(url)))
         conn.commit()
         #conn.close() -- Mis en commentaire car avec on ne peut pas mettre 2 mots de passe à la suite car la connexion se ferme sans se reouvrir
 
-    #Ne MARCHE PAS
-    def modifier_mot_de_passe(self, site, utilisateur, mot_de_passe, url):
+    
+    def modifier_mot_de_passe(self, titre, utilisateur, mot_de_passe, url):
+        selected_item = self.app_instance.tree.selection()
+        if selected_item:
+            item_values = self.app_instance.tree.item(selected_item, "values")
+            mot_de_passe_id = None
+            if item_values:
+                cursor.execute('SELECT id FROM mots_de_passe WHERE titre = ? AND utilisateur = ? AND mot_de_passe = ? AND url = ?',
+                            (item_values[0], item_values[1], item_values[2], item_values[3]))
+                result = cursor.fetchone()
+                if result:
+                    mot_de_passe_id = result[0]
+            # Vérifier si l'ID du mot de passe a été trouvé
+            if mot_de_passe_id:
+                # Supprimer le mot de passe de la base de données
+                cursor.execute('DELETE FROM mots_de_passe WHERE id = ?', (mot_de_passe_id,))
+                conn.commit()
+                # Supprimer l'élément sélectionné du treeview 
+                self.app_instance.tree.delete(selected_item)
+            self.ajouter_mot_de_passe(titre, utilisateur, mot_de_passe, url)
         
-        cursor.execute('''
-                UPDATE mots_de_passe SET utilisateur = ?, mot_de_passe = ?, url = ?
-                WHERE site = ? ''', (site, utilisateur, mot_de_passe, url))
-        conn.commit()
-        
-        
+    
 
     def save_password(self):
         # Récupérer les valeurs des entrées
@@ -125,7 +140,8 @@ class NewPasswordWindow:
         password = self.password_entry.get()
         password_conf = self.password_entry_conf.get()
         url = self.password_URL_entry.get()
-
+        global conseil
+      
         # Vérifier si les champs sont vides
         if not title or not pseudo or not password or not url:
             messagebox.showwarning("Champs vides", "Veuillez remplir tous les champs.", parent=self.master)
@@ -133,9 +149,12 @@ class NewPasswordWindow:
         if password_conf != password:
             messagebox.showwarning("Mot de passe incompatible", "Veuillez mettre les mêmes mots de passe.", parent=self.master)
             return
-        if not self.is_strong_password(password):
-            messagebox.showwarning("Mot de passe faible", "Le mot de passe doit avoir au moins 8 caractères, des majuscules, des minuscules et des caractères spéciaux.", parent=self.master)
+        """ pb avec base sinon
+        if not self.is_strong_password(password) and not conseil:
+            messagebox.showwarning("Mot de passe faible", "Conseil pour mot de passe fort doit avoir au moins 8 caractères, des majuscules, des minuscules et des caractères spéciaux.", parent=self.master)
+            conseil = True
             return
+        """
         if not self.is_valid_url(url): 
             messagebox.showwarning("URL non valide", "Veuillez écrire une URL valide", parent=self.master)
             return
@@ -146,10 +165,6 @@ class NewPasswordWindow:
             # Afficher un message de succès
             messagebox.showinfo("Succès", "Mot de passe ajouté avec succès à la base de données.", parent=self.master)
         else :
-            #selected_item = self.app_instance.tree.selection()
-            #item_values = self.app_instance.tree.item(selected_item, "values")
-           # self.app_instance.tree.item(selected_item, values=(title, pseudo, password, url))
-           #Si ne marche pas voir pour ajouter difference ajouter et modifier
             self.modifier_mot_de_passe(title,pseudo,password, url)
             self.app_instance.update_treeview() 
             # Afficher un message de succès
@@ -158,11 +173,21 @@ class NewPasswordWindow:
         # Fermer la fenêtre
         self.master.destroy()
 
+    """
+        Cette fonction verifie si le mot de passe passé est fort, cependant n'est utilisé
+        que pour conseil car pour des mdp de banque ex: il ne faut que des chiffres      
+    """ 
     def is_strong_password(self, password):
         # Utiliser une expression régulière pour vérifier la force du mot de passe
         regex = re.compile(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()-_+=]).{8,}$')
         return bool(regex.match(password))
 
+    """
+        Verifie si l'url est valide
+        Utilise urlparse pour décomposer l'URL en différentes 
+         parties et vérifier si les parties essentielles sont présentes
+
+    """ 
     def is_valid_url(self, url):
         try:
             result = urlparse(url)

@@ -3,31 +3,7 @@ from tkinter import ttk, messagebox
 from newpassword import NewPasswordWindow
 import sqlite3
 
-	
 
-	
-conn = sqlite3.connect('gestionnaire_mdp.db') #Ouvre la conncexion avec la base de données
-
-# Création d'un curseur pour exécuter des requêtes SQL
-cursor = conn.cursor()
-
-
-#Création de la BDD pour TEST, à déplacer dans le module de création du mdp maître
-
-        #---------------------------------
-def create_bd():
-    cursor.execute('''
-                CREATE TABLE IF NOT EXISTS mots_de_passe (
-                                id INTEGER PRIMARY KEY,
-                                site TEXT NOT NULL,
-                                utilisateur TEXT NOT NULL,
-                                mot_de_passe TEXT NOT NULL,
-                                url TEXT NOT NULL,
-                                note TEXT
-
-                )  ''')
-create_bd()
-        #------------------------
 
 class PasswordManager:
     """
@@ -95,6 +71,7 @@ class PasswordManager:
             cursor.execute('SELECT * FROM mots_de_passe')
             rows = cursor.fetchall()
             for row in rows:
+                #mot_de_passe_masque = '*' * len(row[3])
                 self.tree.insert("", "end", values=(row[1], row[2], row[3], row[4]))
 
     '''
@@ -134,10 +111,20 @@ class PasswordManager:
         selected_item = self.tree.selection()
         if selected_item:
             item_values = self.tree.item(selected_item, "values")
-            password = item_values[2]  # Récupérer le mot de passe
-            self.master.clipboard_clear()
-            self.master.clipboard_append(password)
-            self.master.update()
+            mot_de_passe_id = None
+            if item_values:
+                cursor.execute('SELECT mot_de_passe FROM mots_de_passe WHERE titre = ? AND utilisateur = ? AND mot_de_passe = ? AND url = ?',
+                           (item_values[0], item_values[1], item_values[2], item_values[3]))
+                print(item_values[0])
+                result = cursor.fetchone()
+                print(result)
+                if result :
+                    password =  result  # Récupérer le mot de passe
+                    self.master.clipboard_clear()
+                    self.master.clipboard_append(password)
+                    self.master.update()
+                    print("bien copier")
+                    
         else:
             messagebox.showwarning("Sélection nécessaire", "Veuillez sélectionner une ligne pour copier.")
 
@@ -153,7 +140,7 @@ class PasswordManager:
             item_values = self.tree.item(selected_item, "values")
             mot_de_passe_id = None
             if item_values:
-                cursor.execute('SELECT id FROM mots_de_passe WHERE site = ? AND utilisateur = ? AND mot_de_passe = ? AND url = ?',
+                cursor.execute('SELECT id FROM mots_de_passe WHERE titre = ? AND utilisateur = ? AND mot_de_passe = ? AND url = ?',
                             (item_values[0], item_values[1], item_values[2], item_values[3]))
                 result = cursor.fetchone()
                 if result:
@@ -175,11 +162,61 @@ class PasswordManager:
         conn.commit()
 
 	
+#-------------------------------------------Main-----------------------
+	
+conn = sqlite3.connect('gestionnaire_mdp.db') #Ouvre la connexion avec la base de données
 
+# Création d'un curseur pour exécuter des requêtes SQL
+cursor = conn.cursor()
+
+
+#Création de la BDD pour TEST, à déplacer dans le module de création du mdp maître
+
+        #---------------------------------
+def create_bd():
+    cursor.execute('''
+                CREATE TABLE IF NOT EXISTS mots_de_passe (
+                                id INTEGER PRIMARY KEY,
+                                titre TEXT NOT NULL,
+                                utilisateur TEXT NOT NULL,
+                                mot_de_passe TEXT NOT NULL,
+                                url TEXT NOT NULL,
+                                note TEXT
+
+                )  ''')
+    
+    # Vérifier si les données exemple ont été insérées (CAR INSERT OR IGNORE NE MARCHE PAS)
+    cursor.execute('''
+        SELECT id FROM mots_de_passe
+        WHERE titre = "Facebook" AND utilisateur = "Alan30" AND url = "http://facebook.com"
+    ''')
+    result = cursor.fetchone()
+
+    cursor.execute('''
+        SELECT id FROM mots_de_passe
+        WHERE titre = "Banque" AND utilisateur = "Ada2372" AND url = "http://hellobank.com"
+    ''')
+    result2 = cursor.fetchone()
+    
+    if result is not None and result2 is not None:
+        return
+
+    else:
+
+        cursor.execute('''
+                    INSERT OR IGNORE INTO mots_de_passe (titre, utilisateur, mot_de_passe, url)
+                    VALUES (?, ?, ?, ?) ''', ("Facebook", "Alan30", "SecurePass!456", "http://facebook.com"))
+        cursor.execute('''
+                    INSERT OR IGNORE INTO mots_de_passe (titre, utilisateur, mot_de_passe, url)
+                    VALUES ("Banque","Ada2372", "45637877", "http://hellobank.com") ''')
+        conn.commit()  
+   
+        #------------------------
 
 
 root = tk.Tk()
 root.geometry("1200x800")  # taille de la fenêtre
+create_bd()
 app = PasswordManager(root)
 root.mainloop()
 conn.close()
