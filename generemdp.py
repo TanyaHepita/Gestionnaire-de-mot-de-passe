@@ -78,28 +78,26 @@ class GenereMdp:
     """
     def genererMotDePasse(self, tailleMotDePasse=8, minuscules=True, majuscules=True, chiffres=True, symboles=True):  
         caracteres = ""
+        motDePasse = ""
         if minuscules:
             caracteres += string.ascii_lowercase
+            motDePasse += choice(string.ascii_lowercase)
         if majuscules:
             caracteres += string.ascii_uppercase
+            motDePasse += choice(string.ascii_uppercase)
         if chiffres:
             caracteres += string.digits
+            motDePasse += choice(string.digits)
         if symboles:
             caracteres += "&~#{([-|_\^@)=+$]}*%!/:.;?,"
+            motDePasse += choice("&~#{([-|_\^@)=+$]}*%!/:.;?,")
 
         # S'assurer qu'au moins un caractère de chaque type est inclus NE MARCHE PAS
-        if minuscules:
-            caracteres += choice(string.ascii_lowercase)
-        if majuscules:
-            caracteres += choice(string.ascii_uppercase)
-        if chiffres:
-            caracteres += choice(string.digits)
-        if symboles:
-            caracteres += choice("&~#{([-|_\^@)=+$]}*%!/:.;?,")
-        
-        motDePasse = "".join(choice(caracteres) for _ in range(tailleMotDePasse))
+        motDePasse += "".join(choice(caracteres) for _ in range(tailleMotDePasse - len(motDePasse)))
+
         # Mélanger le mot de passe pour plus de sécurité
         motDePasse = ''.join(sample(motDePasse, len(motDePasse)))
+        
         return motDePasse
 
 
@@ -112,7 +110,6 @@ class GenereMdp:
         majuscules = False
         chiffres = False
         symboles = False
-
         if self.caseMinuscules_var.get():
             minuscules = True
         if self.caseMajuscules_var.get():

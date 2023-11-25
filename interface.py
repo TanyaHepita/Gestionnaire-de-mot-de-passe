@@ -132,6 +132,7 @@ class PasswordManager:
         Une fois la ligne selectionnée le mot passe entier est supprimé de la base de donnée
     """
     def delete_selected(self):
+        #reponse = messagebox.askquestion("Question", "Voulez-vous continuer?")
         selected_item = self.tree.selection()
         if selected_item:
             item_values = self.tree.item(selected_item, "values")
@@ -169,58 +170,3 @@ conn = sqlite3.connect('gestionnaire_mdp.db') #Ouvre la connexion avec la base d
 cursor = conn.cursor()
 
 
-#Création de la BDD pour TEST, à déplacer dans le module de création du mdp maître
-
-        #---------------------------------
-"""
-    Créer la base de donnée
-
-    Si elle n'existe pas créer la table et 2 mots de passe exemple
-"""
-def create_bd():
-    cursor.execute('''
-                CREATE TABLE IF NOT EXISTS mots_de_passe (
-                                id INTEGER PRIMARY KEY,
-                                titre TEXT NOT NULL,
-                                utilisateur TEXT NOT NULL,
-                                mot_de_passe TEXT NOT NULL,
-                                url TEXT NOT NULL,
-                                note TEXT
-
-                )  ''')
-    
-    # Vérifier si les données exemple ont été insérées (CAR INSERT OR IGNORE NE MARCHE PAS)
-    cursor.execute('''
-        SELECT id FROM mots_de_passe
-        WHERE titre = "Facebook" AND utilisateur = "Alan30" AND url = "http://facebook.com"
-    ''')
-    result = cursor.fetchone()
-
-    cursor.execute('''
-        SELECT id FROM mots_de_passe
-        WHERE titre = "Banque" AND utilisateur = "Ada2372" AND url = "http://hellobank.com"
-    ''')
-    result2 = cursor.fetchone()
-    
-    if result is not None or result2 is not None:
-        return
-
-    else:
-
-        cursor.execute('''
-                    INSERT OR IGNORE INTO mots_de_passe (titre, utilisateur, mot_de_passe, url)
-                    VALUES (?, ?, ?, ?) ''', ("Facebook", "Alan30", "SecurePass!456", "http://facebook.com"))
-        cursor.execute('''
-                    INSERT OR IGNORE INTO mots_de_passe (titre, utilisateur, mot_de_passe, url)
-                    VALUES ("Banque","Ada2372", "45637877", "http://hellobank.com") ''')
-        conn.commit()  
-   
-        #------------------------
-
-
-root = tk.Tk()
-root.geometry("1200x800")  # taille de la fenêtre
-create_bd()
-app = PasswordManager(root)
-root.mainloop()
-conn.close()

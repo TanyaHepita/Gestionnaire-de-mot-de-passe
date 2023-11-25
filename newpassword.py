@@ -18,6 +18,7 @@ class NewPasswordWindow:
         self.mode = mode
         self.master.title("Nouveau Mot de Passe")
         self.app_instance = app_instance
+        
 
         selected_item = self.app_instance.tree.selection()
         item_values = self.app_instance.tree.item(selected_item, "values")
