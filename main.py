@@ -2,6 +2,7 @@ from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
 import os
 
+
 def encrypt_file(input_file, output_file, key):
     # Générer la clé aléatoire
     iv = get_random_bytes(16)
@@ -74,3 +75,4 @@ if __name__ == "__main__":
     decrypt_file(output_file_path, decrypted_output_file_path, key)
 
     print(f"Fichier déchiffré avec succès.")
+
