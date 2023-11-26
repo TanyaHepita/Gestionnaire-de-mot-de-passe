@@ -12,10 +12,11 @@ class PasswordManager:
         Créer les boutons et affiche les mots de passe de la base de donnée
     
     """
-    def __init__(self, master):
+    def __init__(self, master, main_instance):
         self.master = master
         self.master.title("Gestionnaire de Mot de Passe")
         self.master.configure(bg="#b0c4de")
+        self.main_instance = main_instance
 
         # Titre pour la création du nouveau mot de passe
         new_password_label = tk.Label(self.master, text="Bienvenue sur votre Gestionnaire de mots de passe", font=("Helvetica", 16, "bold"), anchor="e", background="#b0c4de")
@@ -58,6 +59,10 @@ class PasswordManager:
         delete_button = tk.Button(self.master, text="Supprimer", command=self.delete_selected)
         delete_button.pack(side=tk.LEFT, padx=5, anchor=tk.NW)
 
+        modif_maitre_button = tk.Button(self.master, text="Modifier le mot de passe maitre", command= self.modify_master_password)
+        modif_maitre_button.pack(side=tk.LEFT, padx=5, anchor=tk.NW)
+        #si on ouvre il faut fermer la fenetre actuelle
+
     '''
         Fait la mise à jour de l'affichage des mots de passe 
 
@@ -80,6 +85,10 @@ class PasswordManager:
         new_password_window = tk.Toplevel(self.master)
         new_password_window.geometry("600x500")  # taille de la fenêtre
         new_password_app = NewPasswordWindow(new_password_window, self, "new")
+
+    def modify_master_password(self):
+        self.master.destroy()
+        self.main_instance.change_master_password()
 
     '''
         Ouvre password_window en mode modifier
@@ -169,56 +178,3 @@ conn = sqlite3.connect('gestionnaire_mdp.db') #Ouvre la connexion avec la base d
 # Création d'un curseur pour exécuter des requêtes SQL
 cursor = conn.cursor()
 
-#Création de la BDD pour TEST, à déplacer dans le module de création du mdp maître
-        #--------------------------------
-
-"""
-    Créer la base de donnée
-
-    Si elle n'existe pas créer la table et 2 mots de passe exemple
-"""
-"""
-def create_bd():
-    cursor.execute('''
-                CREATE TABLE IF NOT EXISTS mots_de_passe (
-                                id INTEGER PRIMARY KEY,
-                                titre TEXT NOT NULL,
-                                utilisateur TEXT NOT NULL,
-                                mot_de_passe TEXT NOT NULL,
-                                url TEXT NOT NULL,
-                                note TEXT
-
-                )  ''')
-    
-    # Vérifier si les données exemple ont été insérées (CAR INSERT OR IGNORE NE MARCHE PAS)
-    cursor.execute('''
-        SELECT id FROM mots_de_passe
-        WHERE titre = "Facebook" AND utilisateur = "Alan30" AND url = "http://facebook.com"
-    ''')
-    result = cursor.fetchone()
-
-    cursor.execute('''
-        SELECT id FROM mots_de_passe
-        WHERE titre = "Banque" AND utilisateur = "Ada2372" AND url = "http://hellobank.com"
-    ''')
-    result2 = cursor.fetchone()
-    
-    if result is not None or result2 is not None:
-        return
-
-    else:
-
-        cursor.execute('''
-                    INSERT OR IGNORE INTO mots_de_passe (titre, utilisateur, mot_de_passe, url)
-                    VALUES (?, ?, ?, ?) ''', ("Facebook", "Alan30", "SecurePass!456", "http://facebook.com"))
-        cursor.execute('''
-                    INSERT OR IGNORE INTO mots_de_passe (titre, utilisateur, mot_de_passe, url)
-                    VALUES ("Banque","Ada2372", "45637877", "http://hellobank.com") ''')
-        conn.commit()  
-
-root = tk.Tk()
-root.geometry("800x600")  # taille de la fenêtre
-create_bd()
-app = PasswordManager(root)
-root.mainloop()
-conn.close()"""

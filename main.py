@@ -5,7 +5,6 @@ from PyQt5.QtWidgets import (QApplication, QWidget, QVBoxLayout, QLineEdit,
                              QPushButton, QLabel, QCheckBox, QInputDialog)
 from interface import PasswordManager
 import tkinter as tk
-from tkinter import simpledialog, messagebox
 import sqlite3
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
@@ -67,6 +66,7 @@ PASSWORD_FILE = 'master_password_hash.txt'
 class PasswordMain(QWidget):
     def __init__(self):
         super().__init__()
+       
         self.master_password_hash = None
         self.check_for_existing_master_password()
         self.init_ui()
@@ -125,7 +125,9 @@ class PasswordMain(QWidget):
             if bcrypt.checkpw(password.encode('utf-8'), self.master_password_hash):
                 self.label.setText('Authentification réussie.')
                 self.change_password_button.setEnabled(True)
+                
                 self.open_interface()
+                
             else:
                 self.label.setText('Échec de l\'authentification.')
 
@@ -136,10 +138,11 @@ class PasswordMain(QWidget):
         self.master_password_hash = hashed
 
     def open_interface(self):
+        
         root = tk.Tk()
-        root.geometry("800x600")  # taille de la fenêtre
+        root.geometry("900x600")  # taille de la fenêtre
         create_bd()
-        app = PasswordManager(root)
+        app = PasswordManager(root, ex)
         root.mainloop()
         conn.close()
 
@@ -154,6 +157,7 @@ class PasswordMain(QWidget):
             if ok and self.is_strong_password(new_password):
                 self.create_master_password(new_password)
                 self.label.setText('Le mot de passe maître a été changé avec succès.')
+                self.open_interface()
             elif not ok:
                 self.label.setText('Changement de mot de passe annulé.')
             else:
