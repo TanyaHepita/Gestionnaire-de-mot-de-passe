@@ -16,7 +16,7 @@ def create_bd():
                                 site TEXT NOT NULL,
                                 utilisateur TEXT NOT NULL,
                                 mot_de_passe TEXT NOT NULL,
-                                note TEXT
+                                complex INTEGER
                 )  ''')
 
 create_bd()
@@ -34,17 +34,19 @@ class PasswordManager:
         new_password_label.pack(pady=10)
 
         # Création du tableau
-        self.tree = ttk.Treeview(self.master, columns=("Titre", "Pseudo", "Mot de Passe"), show="headings")
+        self.tree = ttk.Treeview(self.master, columns=("Titre", "Pseudo", "Mot de Passe", "Complexité"), show="headings")
 
         # Configurer les en-têtes de colonnes
         self.tree.heading("Titre", text="Titre")
         self.tree.heading("Pseudo", text="Pseudo")
         self.tree.heading("Mot de Passe", text="Mot de Passe")
+        self.tree.heading("Complexité", text="Complexité")
 
         # Configurer la largeur des colonnes
         self.tree.column("Titre", width=150)
         self.tree.column("Pseudo", width=150)
         self.tree.column("Mot de Passe", width=150)
+        self.tree.column("Complexité", width=100) 
 
         # Récupérer les données de la base de données et les afficher dans le treeview
         
@@ -76,7 +78,30 @@ class PasswordManager:
             rows = cursor.fetchall()
 
             for row in rows:
-                self.tree.insert("", "end", values=(row[1], row[2], row[3]))
+                self.tree.insert("", "end", values=(row[1], row[2], row[3], row[4]))
+                complexite = row[4]
+                self.update_complexity_color(complexite)
+    
+    def update_complexity_color(self, complexite):
+        if complexite is None:
+            return 
+        if complexite <= 2:
+            couleur = "red"
+        elif complexite <= 4:
+            couleur = "orange"
+        else:
+            couleur = "green"
+
+        # Récupère l'ID de la dernière ligne insérée
+        last_id = self.tree.get_children()[-1]
+
+        # Met à jour la couleur dans la colonne Complexité
+        self.tree.item(last_id, values=(self.tree.item(last_id, "values")[0],
+                                        self.tree.item(last_id, "values")[1],
+                                        self.tree.item(last_id, "values")[2],
+                                        complexite),
+                       tags=(couleur,))
+        self.tree.tag_configure(couleur, background=couleur)  # Configure la couleur du tag
                 
     def open_new_password_window(self):
         new_password_window = tk.Toplevel(self.master)

@@ -67,19 +67,44 @@ class NewPasswordWindow:
             self.password_entry.config(show="*")
             self.password_entry_conf.config(show="*")
     
-    def ajouter_mot_de_passe(self, site, utilisateur, mot_de_passe, note=None):
+    def ajouter_mot_de_passe(self, site, utilisateur, mot_de_passe, complexite):
         cursor.execute('''
-                INSERT INTO mots_de_passe (site, utilisateur, mot_de_passe)
-                VALUES (?, ?, ?) ''', (str(site), str(utilisateur), str(mot_de_passe)))
+                INSERT INTO mots_de_passe (site, utilisateur, mot_de_passe, complex)
+                VALUES (?, ?, ?, ?) ''', (str(site), str(utilisateur), str(mot_de_passe), complexite))
         conn.commit()
         conn.close()
     
+    def evaluer_complexite_mot_de_passe(self, mot_de_passe):
+        complexite = 0
+        # Vérifier la longueur minimale
+        if len(mot_de_passe) >= 8:
+            complexite += 1
+
+        # Vérifier la présence d'au moins un chiffre
+        if re.search(r"\d", mot_de_passe):
+            complexite += 1
+
+        # Vérifier la présence d'au moins une majuscule
+        if re.search(r"[A-Z]", mot_de_passe):
+            complexite += 1
+
+        # Vérifier la présence d'au moins un caractère spécial
+        if re.search(r"[!@#$%^&*(),.?\":{}|<>]", mot_de_passe):
+            complexite += 1
+
+        # Vérifier la longueur minimale pour une complexité de 4
+        if len(mot_de_passe) >= 12:
+            complexite += 1
+
+        return complexite
+
     def save_password(self):
         # Récupérer les valeurs des entrées
         title = self.password_name_entry.get()
         pseudo = self.password_pseudo_entry.get()
         password = self.password_entry.get()
         password_conf = self.password_entry_conf.get()
+        complexite = self.evaluer_complexite_mot_de_passe(password)
 
         # Vérifier si les champs sont vides
         if not title or not pseudo or not password:
@@ -93,7 +118,7 @@ class NewPasswordWindow:
             return
 
         # Ajouter les nouvelles données à l'exemple_data (ou à ta base de données)
-        self.ajouter_mot_de_passe(title,pseudo,password)
+        self.ajouter_mot_de_passe(title,pseudo,password, complexite)
         self.app_instance.update_treeview()
         
 
