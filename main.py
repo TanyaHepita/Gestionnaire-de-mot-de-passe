@@ -9,7 +9,12 @@ import sqlite3
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
 
-
+"""
+    Genere une clé et chiffre le fichier donné
+    @input_file : fichier à chiffrer
+    @output_file: fichier chiffré
+    @key : clé de chiffrement
+"""
 
 def encrypt_file(input_file, output_file, key):
     # Générer la clé aléatoire
@@ -35,6 +40,12 @@ def encrypt_file(input_file, output_file, key):
     with open(output_file, 'ab') as f:
         f.write(ciphertext)
 
+"""
+    Genere une clé et chiffre le fichier donné
+    @input_file : fichier à dechiffrer
+    @output_file: fichier déchiffré
+    @key : clé de chiffrement
+"""
 def decrypt_file(input_file, output_file, key):
     # Lire la clé depuis le fichier d'entrée
     with open(input_file, 'rb') as f:
@@ -70,7 +81,11 @@ class PasswordMain(QWidget):
         self.master_password_hash = None
         self.check_for_existing_master_password()
         self.init_ui()
-
+    
+    
+    """"
+        Gère l'affichage de la fenetre de creation et modification de mot de passe
+    """
     def init_ui(self):
         layout = QVBoxLayout()
 
@@ -98,18 +113,28 @@ class PasswordMain(QWidget):
         self.setLayout(layout)
         self.setWindowTitle('Gestionnaire de mots de passe')
 
+    """
+        Permet d'afficher le mot de passe ou de le cacher
+    """
     def toggle_password_visibility(self):
         if self.show_password_checkbox.isChecked():
             self.password_input.setEchoMode(QLineEdit.Normal)
         else:
             self.password_input.setEchoMode(QLineEdit.Password)
-
+    
+    
+    """
+        Verifie si le mot de passe maitre existe déja
+    """
     def check_for_existing_master_password(self):
-        # Vérifiez si le fichier contenant le hash du mot de passe maître existe
+        # Vérifie si le fichier contenant le hash du mot de passe maître existe
         if os.path.exists(PASSWORD_FILE):
             with open(PASSWORD_FILE, 'rb') as file:
                 self.master_password_hash = file.read()
 
+    """
+        Gère l'authentification et la creation du mot de passe maitre
+    """
     def authenticate_or_create(self):
         password = self.password_input.text()
         if not self.master_password_hash:
@@ -131,14 +156,23 @@ class PasswordMain(QWidget):
             else:
                 self.label.setText('Échec de l\'authentification.')
 
+    """
+        Ecrit dans le file le hash généré
+        @password: mot de passe hashé
+    """
     def create_master_password(self, password):
         hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         with open(PASSWORD_FILE, 'wb') as file:
             file.write(hashed)
         self.master_password_hash = hashed
 
+    """
+        Lance l'interface de l'accueil du gestionnaire 
+        de mot de passe
+        Appel PasswordManager la classe d'interface avec une instance de
+        PasswordMain
+    """
     def open_interface(self):
-        
         root = tk.Tk()
         root.geometry("900x600")  # taille de la fenêtre
         create_bd()
@@ -146,6 +180,13 @@ class PasswordMain(QWidget):
         root.mainloop()
         conn.close()
 
+    """
+        Change le mot de passe maitre
+
+        Ouvre une fenêtre verifiant le mot de passe actuel avant de
+        demander la modification
+        Accède au gestionnaire après changement
+    """
     def change_master_password(self):
         current_password, ok = QInputDialog.getText(self, 'Vérification',
                                                     'Entrez votre mot de passe actuel:',
@@ -165,6 +206,12 @@ class PasswordMain(QWidget):
         else:
             self.label.setText('Le mot de passe actuel est incorrect.')
 
+    """
+        Verifie si le mot de passe est fort
+
+        @password : Le mot de passe à vérifier
+        @return : bool    
+    """
     def is_strong_password(self, password):
         return len(password) > 15 and any(char.isdigit() for char in password) and \
                any(char.isupper() for char in password) and any(char.islower() for char in password)
@@ -175,9 +222,6 @@ conn = sqlite3.connect('gestionnaire_mdp.db') #Ouvre la connexion avec la base d
 # Création d'un curseur pour exécuter des requêtes SQL
 cursor = conn.cursor()
 
-
-#Création de la BDD pour TEST, à déplacer dans le module de création du mdp maître
-        #--------------------------------
 """
     Créer la base de donnée
 

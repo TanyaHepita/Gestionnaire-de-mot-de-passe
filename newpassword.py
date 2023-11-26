@@ -6,13 +6,20 @@ from urllib.parse import urlparse
 import sqlite3
 
 conn = sqlite3.connect('gestionnaire_mdp.db') #Ouvre la connexion avec la base de données
-#A voir comment recuperer celle de interface
 
 # Création d'un curseur pour exécuter des requêtes SQL
 cursor = conn.cursor() 
 
 conseil = False 
 class NewPasswordWindow:
+
+    """
+        Affiche la fenêtre de création/modifcation de mot de passe
+        du gestionnaire
+        @master: fenêtre newpassword
+        @app_instance: instance de PasswordManager
+        @mode: mode d'ouverture de la fenêtre (new, modify)
+    """
     def __init__(self, master, app_instance, mode):
         self.master = master
         self.mode = mode
@@ -23,9 +30,6 @@ class NewPasswordWindow:
         selected_item = self.app_instance.tree.selection()
         item_values = self.app_instance.tree.item(selected_item, "values")
         
-        
-        
-
         # Entrée pour le nom du mot de passe
         password_name_label = tk.Label(self.master, text="Titre :", font=('Helvetica', 10, 'bold'))
         password_name_label.pack(side=tk.TOP, padx=5, pady=5, anchor=tk.NW)
@@ -95,12 +99,17 @@ class NewPasswordWindow:
         validate_button = tk.Button(self.master, text="Valider", command=self.save_password)
         validate_button.pack(pady=10, padx=70, anchor=tk.NW)
 
+    """
+        Ouverture de la fenêtre de generation de mot de passe
+    """
     def open_generate_password_window(self):
         generate_password_window = tk.Toplevel(self.master)
         generate_password_window.geometry("550x200")  # taille de la fenêtre
         generate_password_app = GenereMdp(generate_password_window, self)
       
-          
+    """
+        Rend visible ou non le texte dans le champs
+    """     
     def toggle_password_visibility(self):
         if self.show_password_var.get():
             self.password_entry.config(show="")
@@ -109,16 +118,21 @@ class NewPasswordWindow:
             self.password_entry.config(show="*")
             self.password_entry_conf.config(show="*")
    
-   
+    """
+        Ajout d'un mot de passe dans la base de donnée
+        @args: element de la base à enregistrer
+    """
     def ajouter_mot_de_passe(self, titre, utilisateur, mot_de_passe, url, note=None):
         
         cursor.execute('''
                 INSERT INTO mots_de_passe (titre, utilisateur, mot_de_passe, url)
                 VALUES (?, ?, ?, ?) ''', (str(titre), str(utilisateur), str(mot_de_passe), str(url)))
         conn.commit()
-        #conn.close() -- Mis en commentaire car avec on ne peut pas mettre 2 mots de passe à la suite car la connexion se ferme sans se reouvrir
-
-    
+        
+    """
+        Modife le mot de passe de la base de données
+        @args: element de la base à modifier
+    """
     def modifier_mot_de_passe(self, titre, utilisateur, mot_de_passe, url):
         selected_item = self.app_instance.tree.selection()
         if selected_item:
@@ -133,7 +147,6 @@ class NewPasswordWindow:
             # Vérifier si l'ID du mot de passe a été trouvé
             if mot_de_passe_id:
                 # Supprimer le mot de passe de la base de données pour rajouter le nouveau apres 
-                #Car pas possivle modif in sqlite3 (A VERIFIER)
                 cursor.execute('DELETE FROM mots_de_passe WHERE id = ?', (mot_de_passe_id,))
                 conn.commit()
                 # Supprimer l'élément sélectionné du treeview 
@@ -141,7 +154,11 @@ class NewPasswordWindow:
             self.ajouter_mot_de_passe(titre, utilisateur, mot_de_passe, url)
         
     
-
+    """
+        Verifie si les champs rentrés sont corrects pour l'enregistrement du mot de passe
+        par la suite.
+        Récupère tous les element des champs
+    """
     def save_password(self):
         # Récupérer les valeurs des entrées
         title = self.password_name_entry.get()
@@ -184,7 +201,9 @@ class NewPasswordWindow:
 
     """
         Vérifie si le mot de passe passé est fort, cependant n'est utilisé
-        que pour conseil car pour des mdp de banque ex: il ne faut que des chiffres      
+        que pour conseil car pour des mdp de banque ex: il ne faut que des chiffres  
+        @password: mot de passe à verifier
+        @return : bool (true si mdp est assez fort)    
     """ 
     def is_strong_password(self, password):
         # Utiliser une expression régulière pour vérifier la force du mot de passe
@@ -194,8 +213,10 @@ class NewPasswordWindow:
     """
         Verifie si l'url est valide
         Utilise urlparse pour décomposer l'URL en différentes 
-         parties et vérifier si les parties essentielles sont présentes
-
+        parties et vérifier si les parties essentielles sont présentes
+        @url (str): L'URL à vérifier.
+        @Returns:
+            bool: True si l'URL est valide (a un schéma et un emplacement réseau), False sinon.
     """ 
     def is_valid_url(self, url):
         try:

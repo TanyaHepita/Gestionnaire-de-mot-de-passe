@@ -5,6 +5,11 @@ from random import sample
 import string 
 
 class GenereMdp:
+    """
+        Affiche la fenetre de generation de mot de passe
+        @master: fenetre créée
+        @new_instance : instance de la classe interface
+    """
     def __init__(self, master, new_instance):
         self.master = master
         self.master.title("Générateur de mot de passe")
@@ -49,12 +54,18 @@ class GenereMdp:
 
         # Configuration de la fenêtre
         self.master.protocol("WM_DELETE_WINDOW", self.quitter)
-        self.caseMinuscules.select()
-        self.caseChiffres.select()
-
+    
+    """
+        Quitte la fenetre
+    """
     def quitter(self):
         self.master.destroy()
 
+
+    """
+        Copie le mot de passe généré dans le presse papier
+        et dans le champs mot de passe
+    """
     def copier(self):
         mot_de_passe = self.champTexte.get()
         if mot_de_passe:
@@ -75,6 +86,8 @@ class GenereMdp:
 	
     """
         Génère un mot de passe fort
+        @args: bool (true si option cochée, false sinon)
+        @return: mot de passe généré
     """
     def genererMotDePasse(self, tailleMotDePasse=8, minuscules=True, majuscules=True, chiffres=True, symboles=True):  
         caracteres = ""
@@ -92,7 +105,7 @@ class GenereMdp:
             caracteres += "&~#{([-|_\^@)=+$]}*%!/:.;?,"
             motDePasse += choice("&~#{([-|_\^@)=+$]}*%!/:.;?,")
 
-        # S'assurer qu'au moins un caractère de chaque type est inclus NE MARCHE PAS
+
         motDePasse += "".join(choice(caracteres) for _ in range(tailleMotDePasse - len(motDePasse)))
 
         # Mélanger le mot de passe pour plus de sécurité
@@ -126,6 +139,10 @@ class GenereMdp:
         self.champTexte.delete(0, tk.END)
         self.champTexte.insert(0, mot_de_passe)
     
+    """
+        Met à jour l'affichage de la taille du mot de passe
+        @event (tk.Event): L'événement associé au changement de valeur de la glissière.
+    """
     def changerTailleMotDePasse(self, event):
         taille = self.glissiereTaille.get()
         self.glissiereTaille.configure(label=f"Taille : {taille}")

@@ -3,6 +3,9 @@ from tkinter import ttk, messagebox
 from newpassword import NewPasswordWindow
 import sqlite3
 
+conn = sqlite3.connect('gestionnaire_mdp.db') #Ouvre la connexion avec la base de données
+# Création d'un curseur pour exécuter des requêtes SQL
+cursor = conn.cursor()
 
 
 class PasswordManager:
@@ -10,6 +13,7 @@ class PasswordManager:
         Initialise l'interface du gestionnaire
 
         Créer les boutons et affiche les mots de passe de la base de donnée
+        @main_instance: instance de la classe PasswordMain
     
     """
     def __init__(self, master, main_instance):
@@ -79,13 +83,16 @@ class PasswordManager:
 
     '''
         Ouvre password_window en mode nouveau
-
     '''
     def open_new_password_window(self):
         new_password_window = tk.Toplevel(self.master)
         new_password_window.geometry("600x500")  # taille de la fenêtre
         new_password_app = NewPasswordWindow(new_password_window, self, "new")
 
+    """
+        Appelle la fonction pour changer de mot de passe maitre 
+        en fermant d'abord la page du gestionnaire
+    """
     def modify_master_password(self):
         self.master.destroy()
         self.main_instance.change_master_password()
@@ -124,7 +131,7 @@ class PasswordManager:
                            (item_values[0], item_values[1], item_values[2]))
                 result = cursor.fetchone()
                 if result :
-                    password =  result  # Récupérer le mot de passe
+                    password = result  # Récupérer le mot de passe
                     self.master.clipboard_clear()
                     self.master.clipboard_append(password)
                     self.master.update()
@@ -164,17 +171,8 @@ class PasswordManager:
             messagebox.showwarning("Sélection nécessaire", "Veuillez sélectionner une ligne pour supprimer.")
 
     """
-        Supprime mot de passe de la base
+        Supprime mot de passe de la base de donnée
     """
     def supprimer_mot_de_passe(self, mot_de_passe_id):
         cursor.execute('DELETE FROM mots_de_passe WHERE id = ?', (mot_de_passe_id,))
         conn.commit()
-
-	
-#-------------------------------------------Main-----------------------
-	
-conn = sqlite3.connect('gestionnaire_mdp.db') #Ouvre la connexion avec la base de données
-
-# Création d'un curseur pour exécuter des requêtes SQL
-cursor = conn.cursor()
-
