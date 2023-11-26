@@ -1,9 +1,11 @@
-import hashlib
+import sys
+import bcrypt
 import os
-import tkinter as tk
+from PyQt5.QtWidgets import (QApplication, QWidget, QVBoxLayout, QLineEdit,
+                             QPushButton, QLabel, QCheckBox, QInputDialog)
 from interface import PasswordManager
+import tkinter as tk
 from tkinter import simpledialog, messagebox
-import re
 import sqlite3
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
@@ -13,7 +15,6 @@ from Crypto.Random import get_random_bytes
 def encrypt_file(input_file, output_file, key):
     # Générer la clé aléatoire
     iv = get_random_bytes(16)
-
     # Créer un objet AES avec le mode de chiffrement CBC
     cipher = AES.new(key, AES.MODE_CBC, iv)
 
@@ -60,54 +61,109 @@ def decrypt_file(input_file, output_file, key):
         f.write(unpadded_text)
 
 
+# Chemin vers le fichier qui stockera le hash du mot de passe maître
+PASSWORD_FILE = 'master_password_hash.txt'
 
-def is_strong_password(password):
-    # Vérifie si le mot de passe est robuste
-    return bool(re.match(r'^(?=.*[A-Z].*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{16,}$', password))
+class PasswordMain(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.master_password_hash = None
+        self.check_for_existing_master_password()
+        self.init_ui()
 
-def create_master_password():
-    while True:
-        # Demande à l'utilisateur de créer un mot de passe maître robuste
-        master_password = simpledialog.askstring("Création du mot de passe maître", "Créez votre mot de passe maître robuste (au moins 16 caractères, 2 majuscules, des chiffres, des caractères spéciaux) : ")
+    def init_ui(self):
+        layout = QVBoxLayout()
+
+        self.label = QLabel('Entrez votre mot de passe maître' if self.master_password_hash else "Créez votre mot de passe maître, Le mot de passe doit avoir une longeur d' au moin 16 caractéres et contenir au moins : un chiffre,une lettre majuscule,une letrre minuscule et un caractère spécial")
+        self.password_input = QLineEdit(self)
+        self.password_input.setPlaceholderText('Mot de passe maître')
+        self.password_input.setEchoMode(QLineEdit.Password)
         
-        if is_strong_password(master_password):
-            break
+        self.show_password_checkbox = QCheckBox('Afficher le mot de passe', self)
+        self.show_password_checkbox.stateChanged.connect(self.toggle_password_visibility)
+        
+        self.submit_button = QPushButton('Valider', self)
+        self.submit_button.clicked.connect(self.authenticate_or_create)
+        
+        self.change_password_button = QPushButton('Changer le mot de passe maître', self)
+        self.change_password_button.clicked.connect(self.change_master_password)
+        self.change_password_button.setEnabled(False)  # Désactivé jusqu'à authentification
+        
+        layout.addWidget(self.label)
+        layout.addWidget(self.password_input)
+        layout.addWidget(self.show_password_checkbox)
+        layout.addWidget(self.submit_button)
+        layout.addWidget(self.change_password_button)
+
+        self.setLayout(layout)
+        self.setWindowTitle('Gestionnaire de mots de passe')
+
+    def toggle_password_visibility(self):
+        if self.show_password_checkbox.isChecked():
+            self.password_input.setEchoMode(QLineEdit.Normal)
         else:
-            messagebox.showwarning("Mot de passe faible", "Le mot de passe n'est pas assez robuste. Veuillez réessayer.")
+            self.password_input.setEchoMode(QLineEdit.Password)
 
-    # Utilise un hash pour stocker le mot de passe de manière sécurisée
-    hashed_password = hashlib.sha256(master_password.encode()).hexdigest()
-    
-    # Enregistre le hash dans un fichier sur la clé USB
-    with open("master_password.txt", "w") as file:
-        file.write(hashed_password)
-        
-    messagebox.showinfo("Succès", "Mot de passe maître créé avec succès.")
+    def check_for_existing_master_password(self):
+        # Vérifiez si le fichier contenant le hash du mot de passe maître existe
+        if os.path.exists(PASSWORD_FILE):
+            with open(PASSWORD_FILE, 'rb') as file:
+                self.master_password_hash = file.read()
 
-def authenticate():
-    # Demande à l'utilisateur de saisir le mot de passe maître
-    input_password = simpledialog.askstring("Authentification", "Entrez votre mot de passe maître : ")
-    
-    # Charge le hash du mot de passe depuis le fichier
-    with open("master_password.txt", "r") as file:
-        stored_password = file.read()
-        
-    # Vérifie si le hash du mot de passe entré correspond au hash enregistré
-    if hashlib.sha256(input_password.encode()).hexdigest() == stored_password:
-        messagebox.showinfo("Authentification réussie", "Bienvenue ! Authentification réussie.")
-    
-        open_interface()
-    else:
-        messagebox.showerror("Authentification échouée", "Mot de passe incorrect. Authentification échouée.")
+    def authenticate_or_create(self):
+        password = self.password_input.text()
+        if not self.master_password_hash:
+            # Créer un nouveau mot de passe maître
+            if self.is_strong_password(password):
+                self.create_master_password(password)
+                self.label.setText('Le mot de passe maître a été créé.')
+                self.change_password_button.setEnabled(True)
+            else:
+                self.label.setText('Le mot de passe n\'est pas assez robuste.')
+        else:
+            # Authentifier l'utilisateur
+            if bcrypt.checkpw(password.encode('utf-8'), self.master_password_hash):
+                self.label.setText('Authentification réussie.')
+                self.change_password_button.setEnabled(True)
+                self.open_interface()
+            else:
+                self.label.setText('Échec de l\'authentification.')
 
-def open_interface():
-    root = tk.Tk()
-    root.geometry("800x600")  # taille de la fenêtre
-    create_bd()
-    app = PasswordManager(root)
-    root.mainloop()
-    conn.close()
+    def create_master_password(self, password):
+        hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+        with open(PASSWORD_FILE, 'wb') as file:
+            file.write(hashed)
+        self.master_password_hash = hashed
 
+    def open_interface(self):
+        root = tk.Tk()
+        root.geometry("800x600")  # taille de la fenêtre
+        create_bd()
+        app = PasswordManager(root)
+        root.mainloop()
+        conn.close()
+
+    def change_master_password(self):
+        current_password, ok = QInputDialog.getText(self, 'Vérification',
+                                                    'Entrez votre mot de passe actuel:',
+                                                    QLineEdit.Password)
+        if ok and bcrypt.checkpw(current_password.encode('utf-8'), self.master_password_hash):
+            new_password, ok = QInputDialog.getText(self, 'Changer le mot de passe maître',
+                                                    'Entrez le nouveau mot de passe maître:',
+                                                    QLineEdit.Password)
+            if ok and self.is_strong_password(new_password):
+                self.create_master_password(new_password)
+                self.label.setText('Le mot de passe maître a été changé avec succès.')
+            elif not ok:
+                self.label.setText('Changement de mot de passe annulé.')
+            else:
+                self.label.setText('Le nouveau mot de passe n\'est pas assez robuste.')
+        else:
+            self.label.setText('Le mot de passe actuel est incorrect.')
+
+    def is_strong_password(self, password):
+        return len(password) > 15 and any(char.isdigit() for char in password) and \
+               any(char.isupper() for char in password) and any(char.islower() for char in password)
 
 
 conn = sqlite3.connect('gestionnaire_mdp.db') #Ouvre la connexion avec la base de données
@@ -117,8 +173,7 @@ cursor = conn.cursor()
 
 
 #Création de la BDD pour TEST, à déplacer dans le module de création du mdp maître
-
-        #---------------------------------
+        #--------------------------------
 """
     Créer la base de donnée
 
@@ -163,16 +218,9 @@ def create_bd():
         conn.commit()  
 
 
-#-------------------------------------------------Master----------------------------
 
-if __name__ == "__main__":
-
-    # Vérifie si le fichier du mot de passe maître existe
-    if os.path.exists("master_password.txt"):
-        # Si le fichier existe, demande à l'utilisateur de s'authentifier
-        authenticate()
-    else:
-        # Si le fichier n'existe pas, crée un mot de passe maître
-        create_master_password()
-        # Ensuite, demande à l'utilisateur de s'authentifier
-        authenticate()
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    ex = PasswordMain()
+    ex.show()
+    sys.exit(app.exec_())
