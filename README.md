@@ -7,7 +7,7 @@ Le Gestionnaire de Mot de Passe Biométrique est un outil de gestion de mots de 
 Assurez-vous d'installer les modules Python suivants avant d'exécuter le gestionnaire de mot de passe :
 
 ```bash
-pip install bcrypt PyQt5 tk pycryptodome cryptography
+pip install bcrypt PyQt5 tk pycryptodome pycrypto
 pip install pysqlite3
 ```
 
