@@ -236,6 +236,7 @@ def create_bd():
                                 mot_de_passe TEXT NOT NULL,
                                 url TEXT NOT NULL,
                                 note TEXT
+                                complex INTEGER
 
                 )  ''')
     
@@ -258,11 +259,11 @@ def create_bd():
     else:
 
         cursor.execute('''
-                    INSERT OR IGNORE INTO mots_de_passe (titre, utilisateur, mot_de_passe, url)
-                    VALUES (?, ?, ?, ?) ''', ("Facebook", "Alan30", "SecurePass!456", "http://facebook.com"))
+                    INSERT OR IGNORE INTO mots_de_passe (titre, utilisateur, mot_de_passe, url, complex)
+                    VALUES (?, ?, ?, ?, ?) ''', ("Facebook", "Alan30", "SecurePass!456", "http://facebook.com", "5"))
         cursor.execute('''
-                    INSERT OR IGNORE INTO mots_de_passe (titre, utilisateur, mot_de_passe, url)
-                    VALUES ("Banque","Ada2372", "45637877", "http://hellobank.com") ''')
+                    INSERT OR IGNORE INTO mots_de_passe (titre, utilisateur, mot_de_passe, url, complex)
+                    VALUES ("Banque","Ada2372", "45637877", "http://hellobank.com", "2") ''')
         conn.commit()  
 
 

@@ -122,13 +122,41 @@ class NewPasswordWindow:
         Ajout d'un mot de passe dans la base de donnée
         @args: element de la base à enregistrer
     """
-    def ajouter_mot_de_passe(self, titre, utilisateur, mot_de_passe, url, note=None):
+    def ajouter_mot_de_passe(self, titre, utilisateur, mot_de_passe, url, complexite):
         
         cursor.execute('''
-                INSERT INTO mots_de_passe (titre, utilisateur, mot_de_passe, url)
-                VALUES (?, ?, ?, ?) ''', (str(titre), str(utilisateur), str(mot_de_passe), str(url)))
+                INSERT INTO mots_de_passe (titre, utilisateur, mot_de_passe, url, complex)
+                VALUES (?, ?, ?, ?, ?) ''', (str(titre), str(utilisateur), str(mot_de_passe), str(url), complexite))
         conn.commit()
-        
+
+    '''
+            Evalue la complexité d'un mot de passe et lui attribue une note sur 5
+    '''
+    
+    def evaluer_complexite_mot_de_passe(self, mot_de_passe):
+        complexite = 0
+        # Vérifier la longueur minimale
+        if len(mot_de_passe) >= 8:
+            complexite += 1
+
+        # Vérifier la présence d'au moins un chiffre
+        if re.search(r"\d", mot_de_passe):
+            complexite += 1
+
+        # Vérifier la présence d'au moins une majuscule
+        if re.search(r"[A-Z]", mot_de_passe):
+            complexite += 1
+
+        # Vérifier la présence d'au moins un caractère spécial
+        if re.search(r"[!@#$%^&*(),.?\":{}|<>]", mot_de_passe):
+            complexite += 1
+
+        # Vérifier la longueur minimale pour une complexité de 4
+        if len(mot_de_passe) >= 12:
+            complexite += 1
+
+        return complexite
+
     """
         Modife le mot de passe de la base de données
         @args: element de la base à modifier
@@ -166,6 +194,7 @@ class NewPasswordWindow:
         password = self.password_entry.get()
         password_conf = self.password_entry_conf.get()
         url = self.password_URL_entry.get()
+        complexite = self.evaluer_complexite_mot_de_passe(password)
         global conseil
       
         # Vérifier si les champs sont vides
@@ -191,7 +220,7 @@ class NewPasswordWindow:
             # Afficher un message de succès
             messagebox.showinfo("Succès", "Mot de passe ajouté avec succès à la base de données.", parent=self.master)
         else :
-            self.modifier_mot_de_passe(title,pseudo,password, url)
+            self.modifier_mot_de_passe(title,pseudo,password, url, complexite)
             self.app_instance.update_treeview() 
             # Afficher un message de succès
             messagebox.showinfo("Succès", "Mot de passe modifié avec succès à la base de données.", parent=self.master)
