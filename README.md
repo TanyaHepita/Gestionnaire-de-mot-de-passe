@@ -18,4 +18,4 @@ pip install pysqlite3
 ```bash
 python3 main.py
 ```
-
+[![linting: pylint](https://img.shields.io/badge/linting-pylint-yellowgreen)](https://github.com/pylint-dev/pylint)
