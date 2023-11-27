@@ -235,7 +235,6 @@ def create_bd():
                                 utilisateur TEXT NOT NULL,
                                 mot_de_passe TEXT NOT NULL,
                                 url TEXT NOT NULL,
-                                note TEXT
                                 complex INTEGER
 
                 )  ''')

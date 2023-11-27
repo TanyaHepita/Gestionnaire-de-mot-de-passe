@@ -126,7 +126,7 @@ class NewPasswordWindow:
         
         cursor.execute('''
                 INSERT INTO mots_de_passe (titre, utilisateur, mot_de_passe, url, complex)
-                VALUES (?, ?, ?, ?, ?) ''', (str(titre), str(utilisateur), str(mot_de_passe), str(url), complexite))
+                VALUES (?, ?, ?, ?, ?) ''', (str(titre), str(utilisateur), str(mot_de_passe), str(url), str(complexite)))
         conn.commit()
 
     '''
@@ -161,7 +161,7 @@ class NewPasswordWindow:
         Modife le mot de passe de la base de données
         @args: element de la base à modifier
     """
-    def modifier_mot_de_passe(self, titre, utilisateur, mot_de_passe, url):
+    def modifier_mot_de_passe(self, titre, utilisateur, mot_de_passe, url, complexite):
         selected_item = self.app_instance.tree.selection()
         if selected_item:
             item_values = self.app_instance.tree.item(selected_item, "values")
@@ -179,7 +179,7 @@ class NewPasswordWindow:
                 conn.commit()
                 # Supprimer l'élément sélectionné du treeview 
                 self.app_instance.tree.delete(selected_item)
-            self.ajouter_mot_de_passe(titre, utilisateur, mot_de_passe, url)
+            self.ajouter_mot_de_passe(titre, utilisateur, mot_de_passe, url, complexite)
         
     
     """
@@ -215,12 +215,12 @@ class NewPasswordWindow:
             return
         if self.mode == "new" :
             # Ajouter les nouvelles données à l'exemple_data (ou à ta base de données)
-            self.ajouter_mot_de_passe(title, pseudo, password, url)
+            self.ajouter_mot_de_passe(title, pseudo, password, url, complexite)
             self.app_instance.update_treeview() 
             # Afficher un message de succès
             messagebox.showinfo("Succès", "Mot de passe ajouté avec succès à la base de données.", parent=self.master)
         else :
-            self.modifier_mot_de_passe(title,pseudo,password, url, complexite)
+            self.modifier_mot_de_passe(title, pseudo,password, url, complexite)
             self.app_instance.update_treeview() 
             # Afficher un message de succès
             messagebox.showinfo("Succès", "Mot de passe modifié avec succès à la base de données.", parent=self.master)
